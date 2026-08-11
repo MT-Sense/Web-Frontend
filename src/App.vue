@@ -1,11 +1,8 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import RoleSwitcherDev from '@/components/layout/RoleSwitcherDev.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <router-view />
+  <RoleSwitcherDev v-if="$router.currentRoute.value.path !== '/login'" />
 </template>
-
-<style scoped></style>

@@ -1,0 +1,59 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { Locale } from '@/types/common'
+import type { WordCloudTerm } from '@/types/insight'
+
+const props = defineProps<{ terms: WordCloudTerm[] }>()
+const emit = defineEmits<{ termClick: [topicId: string] }>()
+
+const { locale } = useI18n()
+
+const maxFreq = computed(() => Math.max(...props.terms.map((t) => t.frequency)))
+
+function fontSize(freq: number) {
+  const min = 13
+  const max = 34
+  const ratio = freq / maxFreq.value
+  return `${min + ratio * (max - min)}px`
+}
+</script>
+
+<template>
+  <div class="word-cloud">
+    <button
+      v-for="term in props.terms"
+      :key="term.topicId + term.term.th"
+      type="button"
+      class="term"
+      :style="{ fontSize: fontSize(term.frequency) }"
+      @click="emit('termClick', term.topicId)"
+    >
+      {{ term.term[locale as Locale] }}
+    </button>
+  </div>
+</template>
+
+<style scoped>
+.word-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.term {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.term:hover {
+  text-decoration: underline;
+}
+</style>

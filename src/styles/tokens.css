@@ -1,0 +1,107 @@
+:root {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-border: #e2e5ea;
+  --color-text: #1a1d23;
+  --color-text-muted: #666e7a;
+  --color-text-subtle: #9aa1ac;
+
+  --color-primary: #3653e0;
+  --color-primary-hover: #2c44b8;
+  --color-primary-bg: #eef0fd;
+
+  --color-hr: #3653e0;
+  --color-hr-bg: #eef0fd;
+  --color-executive: #7a3be0;
+  --color-executive-bg: #f2ecfd;
+  --color-employee: #1b9e6f;
+  --color-employee-bg: #e6f6ef;
+
+  --color-positive: #1b9e6f;
+  --color-positive-bg: #e6f6ef;
+  --color-neutral: #c98a1c;
+  --color-neutral-bg: #fbf1e0;
+  --color-negative: #d64545;
+  --color-negative-bg: #fbe9e9;
+
+  --color-danger: #d64545;
+  --color-warning: #c98a1c;
+
+  --heat-1: #f5f6f8;
+  --heat-2: #d7e0fb;
+  --heat-3: #a9bcf5;
+  --heat-4: #6f85e8;
+  --heat-5: #3653e0;
+  --heat-6: #1f3399;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --font-sans:
+    'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 33, 0.06);
+  --shadow-md: 0 2px 8px rgba(20, 24, 33, 0.08);
+
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 72px;
+  --header-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
