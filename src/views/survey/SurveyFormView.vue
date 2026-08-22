@@ -234,10 +234,10 @@ function goBackMobile() {
 .question-block {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: var(--space-5);
 }
 
@@ -253,5 +253,19 @@ function goBackMobile() {
 .questions.mobile .question-block {
   min-height: 40vh;
   justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .survey-form {
+    gap: var(--space-4);
+  }
+
+  .questions {
+    gap: var(--space-4);
+  }
+
+  .question-block {
+    padding: var(--space-4);
+  }
 }
 </style>

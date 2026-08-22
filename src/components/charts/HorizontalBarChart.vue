@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Lock } from '@lucide/vue'
 import type { Suppressible } from '@/types/common'
 
 export interface HorizontalBarDatum {
@@ -37,7 +38,7 @@ const maxValue = computed(
           class="fill"
           :style="{ width: (datum.value.data / maxValue) * 100 + '%' }"
         />
-        <span v-else class="suppressed-text">🔒</span>
+        <Lock v-else :size="12" class="suppressed-text" aria-hidden="true" />
       </div>
       <span v-if="showValues && !datum.value.suppressed" class="bar-value">
         {{ datum.value.data.toFixed(1) }}
@@ -77,8 +78,25 @@ const maxValue = computed(
 
 .fill {
   height: 100%;
-  background: var(--color-executive);
+  background: var(--color-accent-400);
   border-radius: 999px;
+  transform-origin: left center;
+  animation: grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    animation: none;
+  }
 }
 
 .suppressed-text {

@@ -7,7 +7,7 @@ const { locale, t } = useI18n()
 </script>
 
 <template>
-  <section class="published-summaries">
+  <section class="published-summaries panel">
     <h2>{{ t('feed.publishedSummaries') }}</h2>
     <article v-for="summary in publishedSummaries" :key="summary.id" class="summary-item">
       <h3>{{ summary.title[locale as Locale] }}</h3>
@@ -19,15 +19,17 @@ const { locale, t } = useI18n()
 
 <style scoped>
 .published-summaries {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 h2 {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .summary-item h3 {

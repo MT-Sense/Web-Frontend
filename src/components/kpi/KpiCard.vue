@@ -14,7 +14,7 @@ const trendClass: Record<string, string> = { up: 'trend-up', down: 'trend-down',
 </script>
 
 <template>
-  <div class="kpi-card">
+  <div class="kpi-card panel">
     <div class="label">{{ label }}</div>
     <div class="value-row">
       <span class="value">{{ value }}</span>
@@ -27,9 +27,6 @@ const trendClass: Record<string, string> = { up: 'trend-up', down: 'trend-down',
 
 <style scoped>
 .kpi-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;

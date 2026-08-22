@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { Lock } from '@lucide/vue'
 
 const { t } = useI18n()
 </script>
 
 <template>
   <div class="suppressed">
-    <span class="icon" aria-hidden="true">🔒</span>
+    <Lock :size="13" aria-hidden="true" />
     <span>{{ t('privacy.suppressed') }}</span>
   </div>
 </template>

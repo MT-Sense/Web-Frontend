@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Download, Mail } from '@lucide/vue'
 import ExecutiveLayout from '@/layouts/ExecutiveLayout.vue'
+import { Button } from '@/components/ui/button'
 import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
@@ -61,8 +63,14 @@ const tenureBarData = computed(() =>
     <div class="toolbar">
       <DropdownSelect v-model="selectedQuarter" :options="quarterOptions" />
       <div class="actions">
-        <button type="button" class="btn">{{ t('common.export') }}</button>
-        <button type="button" class="btn">{{ t('common.sendEmail') }}</button>
+        <Button variant="secondary">
+          <Download :size="16" aria-hidden="true" />
+          {{ t('common.export') }}
+        </Button>
+        <Button variant="secondary">
+          <Mail :size="16" aria-hidden="true" />
+          {{ t('common.sendEmail') }}
+        </Button>
       </div>
     </div>
 
@@ -107,6 +115,8 @@ const tenureBarData = computed(() =>
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .actions {
@@ -114,35 +124,18 @@ const tenureBarData = computed(() =>
   gap: var(--space-2);
 }
 
-.btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: var(--color-bg);
-}
-
-.panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 .panel h2 {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .health-body {
   display: flex;
   align-items: center;
   gap: var(--space-5);
+  flex-wrap: wrap;
 }
 
 .score {
@@ -181,7 +174,7 @@ const tenureBarData = computed(() =>
 }
 
 .swatch-last {
-  border-top: 2px dashed var(--color-executive);
+  border-top: 2px dashed var(--color-text-subtle);
 }
 
 .two-col {
@@ -193,6 +186,24 @@ const tenureBarData = computed(() =>
 @media (max-width: 900px) {
   .two-col {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .health-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
   }
 }
 </style>

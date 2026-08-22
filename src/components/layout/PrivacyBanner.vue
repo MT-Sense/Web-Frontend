@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Lock } from '@lucide/vue'
 
 const props = defineProps<{
   variant: 'filters-active' | 'executive-rule' | 'form-builder' | 'survey-step'
@@ -25,7 +26,7 @@ const textKey = computed(() => {
 
 <template>
   <div class="privacy-banner" :class="props.variant" role="note">
-    <span class="icon" aria-hidden="true">🔒</span>
+    <Lock :size="16" class="icon" aria-hidden="true" />
     <span>{{ t(textKey) }}</span>
   </div>
 </template>
@@ -35,15 +36,17 @@ const textKey = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-accent-100);
+  box-shadow: inset 0 0 0 1px var(--color-accent-200);
+  color: var(--color-accent-700);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  border-radius: var(--radius-sm);
+  line-height: 1.45;
+  border-radius: var(--radius-md);
 }
 
 .icon {
-  font-size: var(--font-size-md);
+  flex: none;
 }
 </style>

@@ -19,6 +19,7 @@ defineProps<{ ratio: number }>()
 .fill {
   height: 100%;
   background: var(--color-primary);
-  transition: width 0.2s ease;
+  border-radius: 999px;
+  transition: width 350ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 </style>

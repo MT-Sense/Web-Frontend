@@ -45,6 +45,7 @@ export default {
     voices: 'ความเห็นเพื่อนร่วมงาน',
     monthlySummary: 'สรุปประจำเดือน',
     mySurveys: 'แบบสอบถามของฉัน',
+    menu: 'เมนู',
   },
   privacy: {
     filtersActive: 'ข้อมูลทั้งหมดไม่ระบุตัวตน · กลุ่มที่มีผู้ตอบ <5 คน จะถูกซ่อน (n<5 hidden)',

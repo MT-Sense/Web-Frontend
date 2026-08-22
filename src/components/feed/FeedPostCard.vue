@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ChevronDown, ChevronUp } from '@lucide/vue'
 import type { FeedPost } from '@/types/feedPost'
 
 const props = defineProps<{ post: FeedPost }>()
@@ -17,11 +18,15 @@ const fontSize = computed(() => {
 </script>
 
 <template>
-  <article class="feed-post">
+  <article class="feed-post panel">
     <div class="votes">
-      <span class="arrow">▲</span>
+      <button type="button" class="arrow" aria-label="upvote">
+        <ChevronUp :size="16" aria-hidden="true" />
+      </button>
       <span class="count">{{ netVotes }}</span>
-      <span class="arrow">▼</span>
+      <button type="button" class="arrow" aria-label="downvote">
+        <ChevronDown :size="16" aria-hidden="true" />
+      </button>
     </div>
     <div class="body">
       <div class="meta">
@@ -41,10 +46,15 @@ const fontSize = computed(() => {
 .feed-post {
   display: flex;
   gap: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   padding: var(--space-4);
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.feed-post:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .votes {
@@ -54,7 +64,7 @@ const fontSize = computed(() => {
   gap: 2px;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
-  min-width: 32px;
+  min-width: 34px;
 }
 
 .count {
@@ -63,7 +73,28 @@ const fontSize = computed(() => {
 }
 
 .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  color: inherit;
   cursor: pointer;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.arrow:hover {
+  color: var(--color-primary);
+  background: var(--color-accent-100);
+}
+
+.arrow:active {
+  transform: scale(0.9);
 }
 
 .body {
@@ -71,11 +102,13 @@ const fontSize = computed(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2);
   font-size: var(--font-size-xs);
 }
@@ -84,6 +117,7 @@ const fontSize = computed(() => {
   background: var(--color-bg);
   color: var(--color-text-muted);
   font-weight: 700;
+  letter-spacing: 0.04em;
   padding: 2px var(--space-2);
   border-radius: 999px;
 }
@@ -94,22 +128,30 @@ const fontSize = computed(() => {
 
 .hr-replied {
   color: var(--color-positive);
+  background: var(--color-positive-bg);
   font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
 }
 
 .text {
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .hashtags {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
 .hashtag {
-  color: var(--color-primary);
+  color: var(--color-accent-700);
+  background: var(--color-accent-100);
   font-size: var(--font-size-xs);
   font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
 }
 </style>

@@ -51,20 +51,31 @@ const { t } = useI18n()
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: 999px;
-  padding: var(--space-1) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
   color: var(--color-text-muted);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
 }
 
 .tab:hover {
   background: var(--color-bg);
+  color: var(--color-text);
 }
 
+.tab:active {
+  transform: scale(0.96);
+}
+
+/* the design outlines the selected state rather than filling it */
 .tab.active {
-  background: var(--color-primary);
+  background: var(--color-accent-100);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-accent-700);
 }
 </style>

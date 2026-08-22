@@ -78,10 +78,17 @@ function addCustomTag() {
 
 textarea {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: var(--space-3);
   resize: vertical;
   font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 150ms ease;
+}
+
+textarea:hover {
+  border-color: var(--color-accent-300);
 }
 
 .tags {
@@ -100,12 +107,26 @@ textarea {
   font-weight: 600;
   cursor: pointer;
   color: var(--color-text-muted);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.tag:hover {
+  border-color: var(--color-accent-300);
+  color: var(--color-text);
+}
+
+.tag:active {
+  transform: scale(0.94);
 }
 
 .tag.active {
-  background: var(--color-primary);
+  background: var(--color-accent-100);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-accent-700);
 }
 
 .tag-input {

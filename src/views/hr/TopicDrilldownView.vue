@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Download, Plus } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import SingleLineChart from '@/components/charts/SingleLineChart.vue'
 import ProgressBarLabeled from '@/components/charts/ProgressBarLabeled.vue'
@@ -67,7 +70,10 @@ function submitAction() {
       <section class="panel">
         <div class="panel-header">
           <h2>{{ t('drilldown.trendTitle') }}</h2>
-          <button type="button" class="btn">{{ t('common.export') }}</button>
+          <Button variant="secondary" size="sm">
+            <Download :size="15" aria-hidden="true" />
+            {{ t('common.export') }}
+          </Button>
         </div>
         <SingleLineChart :points="trendPoints" :max="5" />
       </section>
@@ -97,15 +103,16 @@ function submitAction() {
       <section class="panel">
         <div class="panel-header">
           <h2>Action Items</h2>
-          <button type="button" class="btn primary" @click="showAddAction = true">
+          <Button size="sm" @click="showAddAction = true">
+            <Plus :size="15" aria-hidden="true" />
             {{ t('drilldown.addAction') }}
-          </button>
+          </Button>
         </div>
         <div v-if="showAddAction" class="add-action-form">
-          <input v-model="newAction.assignee" placeholder="Assignee" />
-          <input v-model="newAction.targetDate" type="date" />
-          <button type="button" class="btn primary" @click="submitAction">{{ t('common.save') }}</button>
-          <button type="button" class="btn" @click="showAddAction = false">{{ t('common.cancel') }}</button>
+          <Input v-model="newAction.assignee" placeholder="Assignee" class="max-w-48" />
+          <Input v-model="newAction.targetDate" type="date" class="max-w-44" />
+          <Button @click="submitAction">{{ t('common.save') }}</Button>
+          <Button variant="secondary" @click="showAddAction = false">{{ t('common.cancel') }}</Button>
         </div>
         <ul class="action-list">
           <li v-for="item in actionItems.filter((a) => a.topic.th === topic?.label.th)" :key="item.id">
@@ -124,13 +131,6 @@ function submitAction() {
   gap: var(--space-4);
 }
 
-.panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 .panel-header {
   display: flex;
   align-items: center;
@@ -141,12 +141,15 @@ function submitAction() {
 .panel h2 {
   margin: 0;
   font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .score-panel {
   display: flex;
   align-items: center;
   gap: var(--space-6);
+  flex-wrap: wrap;
 }
 
 .score-block {
@@ -166,6 +169,7 @@ function submitAction() {
 
 .stats {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-6);
 }
 
@@ -208,31 +212,11 @@ function submitAction() {
   font-size: var(--font-size-sm);
 }
 
-.btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
 .add-action-form {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.add-action-form input {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .action-list {
@@ -245,6 +229,17 @@ function submitAction() {
 @media (max-width: 900px) {
   .two-col {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .panel-header {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .stats {
+    gap: var(--space-4);
   }
 }
 </style>

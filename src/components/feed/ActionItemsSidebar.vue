@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { CircleCheck, LoaderCircle } from '@lucide/vue'
 import type { Locale } from '@/types/common'
 import { actionItems } from '@/mocks/actionItems'
 
 const { locale, t } = useI18n()
-
-function statusIcon(status: string) {
-  return status === 'done' ? '✓' : '◔'
-}
 </script>
 
 <template>
-  <section class="action-items">
+  <section class="action-items panel">
     <h2>{{ t('feed.actionsDone') }}</h2>
     <ul>
       <li v-for="item in actionItems" :key="item.id">
-        <span class="icon" :class="item.status">{{ statusIcon(item.status) }}</span>
+        <CircleCheck
+          v-if="item.status === 'done'"
+          :size="16"
+          class="icon done"
+          aria-hidden="true"
+        />
+        <LoaderCircle v-else :size="16" class="icon in_progress" aria-hidden="true" />
         <span>{{ item.topic[locale as Locale] }}</span>
       </li>
     </ul>
@@ -24,15 +27,17 @@ function statusIcon(status: string) {
 
 <style scoped>
 .action-items {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 h2 {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 ul {
@@ -52,7 +57,7 @@ li {
 }
 
 .icon {
-  font-weight: 700;
+  flex: none;
 }
 
 .icon.done {

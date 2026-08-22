@@ -84,7 +84,7 @@ svg {
 }
 
 .poly-last {
-  stroke: var(--color-executive);
+  stroke: var(--color-text-subtle);
   stroke-width: 2;
   stroke-dasharray: 5 4;
 }
@@ -92,8 +92,8 @@ svg {
 .poly-this {
   stroke: var(--color-primary);
   stroke-width: 2;
-  fill: var(--color-primary-bg);
-  fill-opacity: 0.6;
+  fill: var(--color-accent-200);
+  fill-opacity: 0.55;
 }
 
 .axis-label {

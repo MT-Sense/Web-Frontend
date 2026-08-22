@@ -45,6 +45,7 @@ export default {
     voices: 'Coworker Voices',
     monthlySummary: 'Monthly Summary',
     mySurveys: 'My Surveys',
+    menu: 'Menu',
   },
   privacy: {
     filtersActive: 'All data is anonymous · groups with <5 respondents are hidden (n<5 hidden)',

@@ -9,14 +9,14 @@ const { locale, t } = useI18n()
 </script>
 
 <template>
-  <section class="decision-items">
+  <section class="decision-items panel">
     <h2>{{ t('insight.decisionItems') }}</h2>
     <ol>
       <li v-for="item in items" :key="item.id">
         <ProgressBarLabeled
           :label="`${item.rank}. ${item.label[locale as Locale]}`"
           :percentage="item.severity"
-          color="var(--color-executive)"
+          color="var(--color-primary)"
         />
       </li>
     </ol>
@@ -24,13 +24,6 @@ const { locale, t } = useI18n()
 </template>
 
 <style scoped>
-.decision-items {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 h2 {
   margin: 0 0 var(--space-3);
   font-size: var(--font-size-md);

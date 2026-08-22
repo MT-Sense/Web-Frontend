@@ -3,6 +3,7 @@ import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useRoleLayout } from '@/composables/useRoleLayout'
+import { Button } from '@/components/ui/button'
 import FeedPostCard from '@/components/feed/FeedPostCard.vue'
 import FeedFilterTabs from '@/components/feed/FeedFilterTabs.vue'
 import PublishedSummarySidebar from '@/components/feed/PublishedSummarySidebar.vue'
@@ -58,9 +59,9 @@ function loadMore() {
         <div class="posts">
           <FeedPostCard v-for="post in filteredPosts" :key="post.id" :post="post" />
         </div>
-        <button v-if="hasMore" type="button" class="load-more" @click="loadMore">
+        <Button v-if="hasMore" variant="secondary" class="load-more" @click="loadMore">
           {{ t('common.loadMore') }}
-        </button>
+        </Button>
         <p class="footer-note">{{ t('feed.footerNote') }}</p>
       </div>
       <aside class="feed-sidebar">
@@ -93,16 +94,6 @@ function loadMore() {
 
 .load-more {
   align-self: center;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-5);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.load-more:hover {
-  background: var(--color-bg);
 }
 
 .footer-note {
@@ -115,6 +106,12 @@ function loadMore() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+@media (max-width: 1100px) {
+  .feed-layout {
+    grid-template-columns: 1fr 280px;
+  }
 }
 
 @media (max-width: 900px) {

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  FolderKanban,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  Upload,
+  Wrench,
+} from '@lucide/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import SidebarNav, { type NavItem } from '@/components/layout/SidebarNav.vue'
 
@@ -9,12 +17,12 @@ withDefaults(defineProps<{ breadcrumb?: string }>(), { breadcrumb: '' })
 const { t } = useI18n()
 
 const items = computed<NavItem[]>(() => [
-  { label: t('nav.dashboard'), to: '/dashboard', icon: '📊' },
-  { label: t('nav.topics'), to: '/dashboard/topics/work', icon: '🗂️' },
-  { label: t('nav.feed'), to: '/voices', icon: '💬' },
-  { label: t('nav.forms'), to: '/forms/builder/demo-1', icon: '🛠️' },
-  { label: t('nav.reports'), to: '/dashboard', icon: '📤' },
-  { label: t('nav.settings'), to: '/settings', icon: '⚙️' },
+  { label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
+  { label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
+  { label: t('nav.feed'), to: '/voices', icon: MessageSquare },
+  { label: t('nav.forms'), to: '/forms/builder/demo-1', icon: Wrench },
+  { label: t('nav.reports'), to: '/dashboard', icon: Upload },
+  { label: t('nav.settings'), to: '/settings', icon: Settings },
 ])
 </script>
 
@@ -49,5 +57,14 @@ const items = computed<NavItem[]>(() => [
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: var(--space-4);
+  }
 }
 </style>

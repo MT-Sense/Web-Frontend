@@ -61,10 +61,18 @@ button {
   padding: var(--space-1) var(--space-2);
   cursor: pointer;
   font-weight: 600;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+button:active {
+  transform: scale(0.94);
 }
 
 button.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
+  color: var(--color-accent-100);
 }
 </style>

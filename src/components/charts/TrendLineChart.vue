@@ -85,7 +85,7 @@ svg {
 }
 
 .line-b {
-  stroke: var(--color-executive);
+  stroke: var(--color-text-subtle);
   stroke-width: 2.5;
 }
 
@@ -94,7 +94,7 @@ svg {
 }
 
 .dot-b {
-  fill: var(--color-executive);
+  fill: var(--color-text-subtle);
 }
 
 .axis-label {
@@ -126,7 +126,58 @@ svg {
 }
 
 .swatch-b {
-  background: var(--color-executive);
-  border-top: 2px dashed var(--color-executive);
+  background: var(--color-text-subtle);
+  border-top: 2px dashed var(--color-text-subtle);
+}
+
+/* lines draw themselves in on mount */
+.line {
+  stroke-dashoffset: 0;
+  animation: draw 900ms ease-out both;
+}
+
+.line-b {
+  animation-name: draw-dashed;
+}
+
+.dot {
+  animation: fade-in 500ms ease-out both;
+  animation-delay: 700ms;
+}
+
+@keyframes draw {
+  from {
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+  }
+  to {
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-dashed {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line,
+  .dot {
+    animation: none;
+  }
 }
 </style>

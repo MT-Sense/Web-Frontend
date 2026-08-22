@@ -15,7 +15,7 @@ function capitalize(s: string) {
 </script>
 
 <template>
-  <section class="insight-panel">
+  <section class="insight-panel panel">
     <div class="header">
       <h2>{{ t('insight.title') }}</h2>
       <div class="score">
@@ -37,10 +37,6 @@ function capitalize(s: string) {
 
 <style scoped>
 .insight-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

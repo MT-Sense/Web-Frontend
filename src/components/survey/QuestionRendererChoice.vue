@@ -59,21 +59,31 @@ function isSelected(optionLabel: string) {
   gap: var(--space-3);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
   text-align: left;
   cursor: pointer;
   font-weight: 500;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
 }
 
 .choice:hover {
   background: var(--color-bg);
+  border-color: var(--color-accent-300);
+}
+
+.choice:active {
+  transform: scale(0.99);
 }
 
 .choice.active {
   border-color: var(--color-primary);
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
+  background: var(--color-accent-100);
+  color: var(--color-accent-700);
   font-weight: 700;
 }
 

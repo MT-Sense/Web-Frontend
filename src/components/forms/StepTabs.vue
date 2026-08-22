@@ -44,13 +44,26 @@ const { t, locale } = useI18n()
   color: var(--color-text-muted);
 }
 
+.tab {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
 .tab:hover {
   background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.tab:active {
+  transform: scale(0.97);
 }
 
 .tab.active {
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
+  background: var(--color-accent-100);
+  color: var(--color-accent-700);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .tab.add {

@@ -50,6 +50,24 @@ svg {
 .line {
   stroke: var(--color-primary);
   stroke-width: 2.5;
+  animation: draw 900ms ease-out both;
+}
+
+@keyframes draw {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    animation: none;
+  }
 }
 
 .dot {

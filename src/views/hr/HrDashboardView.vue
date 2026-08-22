@@ -2,7 +2,9 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { Download, Mail } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
+import { Button } from '@/components/ui/button'
 import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import KpiCard from '@/components/kpi/KpiCard.vue'
@@ -55,8 +57,14 @@ function filterFeedByTag(topicId: string) {
         <DropdownSelect v-model="selectedDepartment" :options="departmentOptions" />
       </div>
       <div class="actions">
-        <button type="button" class="btn">{{ t('common.export') }}</button>
-        <button type="button" class="btn">{{ t('common.sendEmail') }}</button>
+        <Button variant="secondary">
+          <Download :size="16" aria-hidden="true" />
+          {{ t('common.export') }}
+        </Button>
+        <Button variant="secondary">
+          <Mail :size="16" aria-hidden="true" />
+          {{ t('common.sendEmail') }}
+        </Button>
       </div>
     </div>
 
@@ -84,7 +92,7 @@ function filterFeedByTag(topicId: string) {
         :value="`${hrKpis.responseRate.percentage}%`"
         :sublabel="`${hrKpis.responseRate.responded}/${hrKpis.responseRate.total}`"
       />
-      <div class="kpi-card sentiment-card">
+      <div class="kpi-card sentiment-card panel">
         <div class="label">{{ t('kpi.sentimentDistribution') }}</div>
         <SentimentBar :sentiment="hrKpis.sentiment" />
       </div>
@@ -127,19 +135,6 @@ function filterFeedByTag(topicId: string) {
   gap: var(--space-2);
 }
 
-.btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: var(--color-bg);
-}
-
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -147,9 +142,6 @@ function filterFeedByTag(topicId: string) {
 }
 
 .kpi-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -162,16 +154,11 @@ function filterFeedByTag(topicId: string) {
   font-weight: 600;
 }
 
-.panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 .panel h2 {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .two-col {
@@ -180,12 +167,31 @@ function filterFeedByTag(topicId: string) {
   gap: var(--space-4);
 }
 
+@media (max-width: 1200px) {
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .kpi-row {
     grid-template-columns: repeat(2, 1fr);
   }
   .two-col {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+  .toolbar {
+    align-items: stretch;
+  }
+  .filters,
+  .actions {
+    flex-wrap: wrap;
   }
 }
 </style>

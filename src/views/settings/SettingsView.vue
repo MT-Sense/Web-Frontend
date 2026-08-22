@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Check, Circle } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { useRoleLayout } from '@/composables/useRoleLayout'
 import { useAuthStore } from '@/stores/auth'
 import { auditLog } from '@/mocks/auditLog'
@@ -35,20 +38,20 @@ function toggleLocale() {
       <section class="panel">
         <h2>{{ t('settings.notifications') }}</h2>
         <label class="toggle-row">
-          <input type="checkbox" v-model="notifications.newRound" />
+          <Switch v-model="notifications.newRound" />
           {{ t('settings.notifyNewRound') }}
         </label>
         <label v-if="auth.currentRole === 'HR' || auth.currentRole === 'Executive'" class="toggle-row">
-          <input type="checkbox" v-model="notifications.monthlySummary" />
+          <Switch v-model="notifications.monthlySummary" />
           {{ t('settings.notifyMonthlySummary') }}
         </label>
       </section>
 
       <section class="panel">
         <h2>{{ t('settings.language') }}</h2>
-        <button type="button" class="btn" @click="toggleLocale">
+        <Button variant="secondary" @click="toggleLocale">
           {{ locale === 'th' ? 'English' : 'ไทย' }}
-        </button>
+        </Button>
       </section>
 
       <section class="panel privacy-box">
@@ -57,12 +60,14 @@ function toggleLocale() {
         <h3>{{ t('settings.submittedHistory') }}</h3>
         <ul>
           <li v-for="entry in auditLog" :key="entry.surveyId">
-            {{ entry.surveyId }} — {{ entry.status === 'submitted' ? '✓' : '○' }} {{ entry.status }}
+            <Check v-if="entry.status === 'submitted'" :size="14" class="log-icon done" aria-hidden="true" />
+            <Circle v-else :size="14" class="log-icon" aria-hidden="true" />
+            {{ entry.surveyId }} — {{ entry.status }}
           </li>
         </ul>
         <div class="actions">
-          <button type="button" class="btn">{{ t('settings.changePassword') }}</button>
-          <button type="button" class="btn">{{ t('settings.logoutAllDevices') }}</button>
+          <Button variant="secondary">{{ t('settings.changePassword') }}</Button>
+          <Button variant="secondary">{{ t('settings.logoutAllDevices') }}</Button>
         </div>
       </section>
     </div>
@@ -77,16 +82,11 @@ function toggleLocale() {
   max-width: 640px;
 }
 
-.panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 .panel h2 {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 dl {
@@ -111,23 +111,15 @@ dd.muted {
 .toggle-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--space-2);
-}
-
-.btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
+  margin-bottom: var(--space-3);
   cursor: pointer;
 }
 
 .privacy-box {
-  background: var(--color-primary-bg);
-  border-color: var(--color-primary);
+  background: var(--color-accent-100);
+  box-shadow: inset 0 0 0 1px var(--color-accent-200);
 }
 
 .privacy-box p {
@@ -141,13 +133,33 @@ dd.muted {
 }
 
 .privacy-box ul {
-  margin: 0 0 var(--space-3);
-  padding-left: var(--space-4);
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
   font-size: var(--font-size-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.privacy-box li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.log-icon {
+  flex: none;
+  color: var(--color-text-subtle);
+}
+
+.log-icon.done {
+  color: var(--color-positive);
 }
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 </style>

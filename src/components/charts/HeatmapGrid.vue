@@ -12,8 +12,8 @@ const emit = defineEmits<{ cellClick: [topicId: string, department: Department] 
 const { locale } = useI18n()
 const rows = getHeatmapMatrix()
 
+/** Lower score = worse = darker step of the accent ramp. */
 function heatClass(score: number) {
-  if (score >= 4.2) return 'heat-6'
   if (score >= 3.8) return 'heat-5'
   if (score >= 3.4) return 'heat-4'
   if (score >= 3.0) return 'heat-3'
@@ -98,34 +98,48 @@ function heatClass(score: number) {
   font-size: var(--font-size-sm);
   cursor: pointer;
   color: var(--color-text);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
+.cell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cell:active {
+  transform: scale(0.97);
+}
+
+/* the two darkest steps take light text, the rest dark — per the design's own flip rule */
 .cell.heat-1 {
-  background: var(--heat-1);
+  background: var(--color-heat-1);
+  color: var(--color-accent-100);
 }
 .cell.heat-2 {
-  background: var(--heat-2);
+  background: var(--color-heat-2);
+  color: var(--color-accent-100);
 }
 .cell.heat-3 {
-  background: var(--heat-3);
-  color: white;
+  background: var(--color-heat-3);
+  color: var(--color-accent-100);
 }
 .cell.heat-4 {
-  background: var(--heat-4);
-  color: white;
+  background: var(--color-heat-4);
+  color: var(--color-accent-100);
 }
 .cell.heat-5 {
-  background: var(--heat-5);
-  color: white;
-}
-.cell.heat-6 {
-  background: var(--heat-6);
-  color: white;
+  background: var(--color-heat-5);
+  color: var(--color-accent-900);
 }
 
 .suppressed-row {
   background: var(--color-bg);
   border-radius: var(--radius-sm);
   height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

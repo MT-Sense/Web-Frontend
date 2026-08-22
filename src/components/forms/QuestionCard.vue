@@ -38,7 +38,7 @@ function updateSendToAi(value: boolean) {
 </script>
 
 <template>
-  <div class="question-card">
+  <div class="question-card panel">
     <div class="drag-handle" aria-hidden="true">⠿</div>
     <div class="body">
       <div class="top-row">
@@ -90,9 +90,6 @@ function updateSendToAi(value: boolean) {
 .question-card {
   display: flex;
   gap: var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   padding: var(--space-4);
 }
 
@@ -119,8 +116,8 @@ function updateSendToAi(value: boolean) {
 .type-tag {
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--color-primary);
-  background: var(--color-primary-bg);
+  color: var(--color-accent-700);
+  background: var(--color-accent-100);
   padding: 2px var(--space-2);
   border-radius: 999px;
 }
@@ -131,12 +128,26 @@ function updateSendToAi(value: boolean) {
 }
 
 .move-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--radius-sm);
   width: 28px;
   height: 28px;
   cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.move-buttons button:hover:not(:disabled) {
+  background: var(--color-bg);
+}
+
+.move-buttons button:active:not(:disabled) {
+  transform: scale(0.92);
 }
 
 .move-buttons button:disabled {

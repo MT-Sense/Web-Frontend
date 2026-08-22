@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { LogOut, Settings } from '@lucide/vue'
 import type { CurrentUser } from '@/types/user'
 import { useAuthStore } from '@/stores/auth'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const props = defineProps<{ user: CurrentUser }>()
-const open = ref(false)
 const router = useRouter()
 const auth = useAuthStore()
 const { t } = useI18n()
@@ -15,77 +23,53 @@ function initials(name: string) {
   return name.trim().slice(0, 1)
 }
 
-function handleSettings() {
-  open.value = false
-  router.push('/settings')
-}
-
 function handleLogout() {
-  open.value = false
   auth.logout()
   router.push('/login')
 }
 </script>
 
 <template>
-  <div class="avatar-menu">
-    <button type="button" class="avatar" @click="open = !open">{{ initials(props.user.fullName) }}</button>
-    <div v-if="open" class="menu">
-      <div class="menu-name">{{ props.user.fullName }}</div>
-      <button type="button" @click="handleSettings">{{ t('nav.settings') }}</button>
-      <button type="button" @click="handleLogout">{{ t('common.logout') }}</button>
-    </div>
-  </div>
+  <DropdownMenu>
+    <DropdownMenuTrigger as-child>
+      <button type="button" class="avatar-trigger" :aria-label="props.user.fullName">
+        <Avatar class="size-9">
+          <AvatarFallback class="avatar-fallback">{{ initials(props.user.fullName) }}</AvatarFallback>
+        </Avatar>
+      </button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" class="min-w-44">
+      <DropdownMenuLabel>{{ props.user.fullName }}</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem @select="router.push('/settings')">
+        <Settings :size="16" aria-hidden="true" />
+        {{ t('nav.settings') }}
+      </DropdownMenuItem>
+      <DropdownMenuItem @select="handleLogout">
+        <LogOut :size="16" aria-hidden="true" />
+        {{ t('common.logout') }}
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <style scoped>
-.avatar-menu {
-  position: relative;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: var(--color-primary);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.menu {
-  position: absolute;
-  right: 0;
-  top: 44px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  min-width: 160px;
-  padding: var(--space-2);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu-name {
-  padding: var(--space-2);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-1);
-}
-
-.menu button {
+.avatar-trigger {
   border: none;
   background: none;
-  text-align: left;
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  padding: 0;
   cursor: pointer;
+  border-radius: 50%;
+  transition: transform 150ms ease;
 }
 
-.menu button:hover {
-  background: var(--color-bg);
+.avatar-trigger:active {
+  transform: scale(0.94);
+}
+
+.avatar-fallback {
+  background: var(--color-accent-200);
+  color: var(--color-accent-800);
+  font-weight: 700;
 }
 </style>

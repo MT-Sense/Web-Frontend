@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Circle, FileText, ListChecks, Star, TrendingUp } from '@lucide/vue'
 import type { QuestionType } from '@/types/survey'
 
 const emit = defineEmits<{ add: [type: QuestionType] }>()
 const { t } = useI18n()
 
-const paletteItems: { type: QuestionType; label: string; icon: string }[] = [
-  { type: 'scale5', label: 'Scale 1-5', icon: '⭐' },
-  { type: 'singleChoice', label: 'Single choice', icon: '🔘' },
-  { type: 'multiChoice', label: 'Multiple choice', icon: '☑️' },
-  { type: 'openText', label: 'Open text', icon: '📝' },
-  { type: 'enps', label: 'eNPS 0-10', icon: '📈' },
+const paletteItems: { type: QuestionType; label: string; icon: Component }[] = [
+  { type: 'scale5', label: 'Scale 1-5', icon: Star },
+  { type: 'singleChoice', label: 'Single choice', icon: Circle },
+  { type: 'multiChoice', label: 'Multiple choice', icon: ListChecks },
+  { type: 'openText', label: 'Open text', icon: FileText },
+  { type: 'enps', label: 'eNPS 0-10', icon: TrendingUp },
 ]
 </script>
 
@@ -24,7 +26,7 @@ const paletteItems: { type: QuestionType; label: string; icon: string }[] = [
       class="palette-item"
       @click="emit('add', item.type)"
     >
-      <span class="icon">{{ item.icon }}</span>
+      <component :is="item.icon" :size="16" class="icon" aria-hidden="true" />
       {{ item.label }}
     </button>
   </div>
@@ -59,12 +61,24 @@ h3 {
   text-align: left;
 }
 
+.palette-item {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
 .palette-item:hover {
-  background: var(--color-primary-bg);
+  background: var(--color-accent-100);
   border-color: var(--color-primary);
+  color: var(--color-accent-700);
+}
+
+.palette-item:active {
+  transform: scale(0.97);
 }
 
 .icon {
-  font-size: var(--font-size-md);
+  flex: none;
 }
 </style>

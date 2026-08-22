@@ -46,14 +46,25 @@ function fontSize(freq: number) {
 .term {
   border: none;
   background: none;
-  color: var(--color-primary);
+  color: var(--color-accent-600);
   font-weight: 700;
   cursor: pointer;
   line-height: 1;
-  padding: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
 }
 
 .term:hover {
-  text-decoration: underline;
+  color: var(--color-accent-800);
+  background: var(--color-accent-100);
+  transform: translateY(-1px);
+}
+
+.term:active {
+  transform: scale(0.96);
 }
 </style>

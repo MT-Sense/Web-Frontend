@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { Languages } from '@lucide/vue'
 import { setLocale } from '@/i18n'
+import { Button } from '@/components/ui/button'
 
 const { locale, t } = useI18n()
 
@@ -13,9 +15,10 @@ function toggleLocale() {
   <div class="auth-layout">
     <header class="header">
       <span class="app-name">{{ t('app.name') }}</span>
-      <button type="button" class="lang-toggle" @click="toggleLocale">
+      <Button variant="secondary" size="sm" @click="toggleLocale">
+        <Languages :size="15" aria-hidden="true" />
         {{ locale === 'th' ? 'EN' : 'TH' }}
-      </button>
+      </Button>
     </header>
     <main class="content">
       <slot />
@@ -28,6 +31,13 @@ function toggleLocale() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(
+      ellipse 80% 55% at 50% 0%,
+      color-mix(in srgb, var(--color-accent-200) 45%, transparent),
+      transparent 70%
+    ),
+    var(--color-bg);
 }
 
 .header {
@@ -36,22 +46,12 @@ function toggleLocale() {
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-5);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
 }
 
 .app-name {
   font-weight: 700;
   font-size: var(--font-size-lg);
-}
-
-.lang-toggle {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-3);
-  cursor: pointer;
-  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 .content {
@@ -59,6 +59,6 @@ function toggleLocale() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5);
+  padding: var(--space-5) var(--space-4) var(--space-7);
 }
 </style>

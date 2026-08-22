@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { Check } from '@lucide/vue'
 import type { Survey } from '@/types/survey'
+import { Button } from '@/components/ui/button'
 
 defineProps<{ survey: Survey }>()
 const { t } = useI18n()
@@ -8,11 +10,15 @@ const { t } = useI18n()
 
 <template>
   <div class="thank-you">
-    <div class="check">✓</div>
+    <div class="check">
+      <Check :size="32" aria-hidden="true" />
+    </div>
     <h1>{{ t('survey.thankYouTitle') }}</h1>
     <p>{{ t('survey.thankYouBody') }}</p>
     <p class="next-round">{{ t('survey.nextRound') }}: {{ survey.nextRoundDate }}</p>
-    <router-link to="/voices" class="link-btn">{{ t('survey.viewLastSummary') }}</router-link>
+    <Button as-child variant="secondary" class="mt-3">
+      <router-link to="/voices">{{ t('survey.viewLastSummary') }}</router-link>
+    </Button>
   </div>
 </template>
 
@@ -27,15 +33,32 @@ const { t } = useI18n()
 }
 
 .check {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: var(--color-positive-bg);
-  color: var(--color-positive);
-  font-size: var(--font-size-xxl);
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: pop 450ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check {
+    animation: none;
+  }
 }
 
 h1 {
@@ -51,19 +74,5 @@ p {
 .next-round {
   font-weight: 600;
   color: var(--color-text);
-}
-
-.link-btn {
-  margin-top: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-5);
-  text-decoration: none;
-  color: var(--color-text);
-  font-weight: 600;
-}
-
-.link-btn:hover {
-  background: var(--color-bg);
 }
 </style>

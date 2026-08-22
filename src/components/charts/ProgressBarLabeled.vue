@@ -47,5 +47,22 @@ withDefaults(defineProps<{ label: string; percentage: number; color?: string }>(
 .fill {
   height: 100%;
   border-radius: 999px;
+  transform-origin: left center;
+  animation: grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    animation: none;
+  }
 }
 </style>

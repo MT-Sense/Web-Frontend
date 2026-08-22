@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Check, Eye, Send } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
+import { Button } from '@/components/ui/button'
 import PrivacySettingsPanel from '@/components/forms/PrivacySettingsPanel.vue'
 import QuestionTypePalette from '@/components/forms/QuestionTypePalette.vue'
 import StepTabs from '@/components/forms/StepTabs.vue'
@@ -88,13 +90,20 @@ function publish() {
         </select>
       </label>
       <div class="actions">
-        <button type="button" class="btn" @click="showPreview = !showPreview">
+        <Button variant="secondary" @click="showPreview = !showPreview">
+          <Eye :size="16" aria-hidden="true" />
           {{ t('common.preview') }}
-        </button>
-        <button type="button" class="btn primary" @click="publish">{{ t('formBuilder.publish') }}</button>
+        </Button>
+        <Button @click="publish">
+          <Send :size="16" aria-hidden="true" />
+          {{ t('formBuilder.publish') }}
+        </Button>
       </div>
     </div>
-    <p v-if="published" class="published-note">✓ Published + notified all employees</p>
+    <p v-if="published" class="published-note">
+      <Check :size="16" aria-hidden="true" />
+      Published + notified all employees
+    </p>
 
     <StepTabs v-model="currentStepIndex" :steps="draft.steps" @add-step="addStep" />
 
@@ -118,7 +127,7 @@ function publish() {
       </div>
     </div>
 
-    <div v-if="showPreview" class="preview-panel">
+    <div v-if="showPreview" class="preview-panel panel">
       <h3>{{ t('common.preview') }}</h3>
       <div v-for="step in draft.steps" :key="step.id" class="preview-step">
         <h4>{{ step.title.th }}</h4>
@@ -135,6 +144,8 @@ function publish() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .cadence select {
@@ -149,24 +160,16 @@ function publish() {
   gap: var(--space-2);
 }
 
-.btn {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
 .published-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-positive);
+  background: var(--color-positive-bg);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
   font-weight: 600;
+  margin: 0;
 }
 
 .builder-body {
@@ -191,14 +194,27 @@ function publish() {
   border-radius: var(--radius-md);
 }
 
-.preview-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 .preview-step h4 {
   margin: var(--space-3) 0 var(--space-1);
+}
+
+@media (max-width: 900px) {
+  .builder-body {
+    flex-direction: column;
+  }
+
+  .builder-body :deep(.palette) {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .builder-body :deep(.palette h3) {
+    width: 100%;
+  }
+
+  .canvas {
+    width: 100%;
+  }
 }
 </style>

@@ -8,7 +8,7 @@ const { locale, t } = useI18n()
 </script>
 
 <template>
-  <section class="urgent-issues">
+  <section class="urgent-issues panel">
     <h2>{{ t('insight.urgentIssues') }}</h2>
     <ul>
       <li v-for="issue in issues" :key="issue.id">
@@ -22,13 +22,6 @@ const { locale, t } = useI18n()
 </template>
 
 <style scoped>
-.urgent-issues {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
 h2 {
   margin: 0 0 var(--space-3);
   font-size: var(--font-size-md);
@@ -48,8 +41,8 @@ li {
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--color-negative-bg);
 }
 

@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
 export interface DropdownOption {
   value: string
   label: string
@@ -11,25 +20,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
-function onChange(e: Event) {
-  emit('update:modelValue', (e.target as HTMLSelectElement).value)
-}
+const selected = computed({
+  get: () => props.modelValue,
+  set: (v: string) => emit('update:modelValue', v),
+})
 </script>
 
 <template>
-  <select class="dropdown-select" :value="props.modelValue" @change="onChange">
-    <option v-for="opt in props.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-  </select>
+  <Select v-model="selected">
+    <SelectTrigger class="min-w-40 font-semibold">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem v-for="opt in props.options" :key="opt.value" :value="opt.value">
+        {{ opt.label }}
+      </SelectItem>
+    </SelectContent>
+  </Select>
 </template>
-
-<style scoped>
-.dropdown-select {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-weight: 600;
-  cursor: pointer;
-}
-</style>
