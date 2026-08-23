@@ -14,7 +14,7 @@ function makeRouter() {
       {
         path: '/dashboard',
         component: { template: '<div>dashboard</div>' },
-        meta: { roles: ['HR'] },
+        meta: { roles: ['admin'] },
       },
     ],
   })
@@ -24,7 +24,7 @@ function makeRouter() {
 
 describe('App', () => {
   beforeEach(() => {
-    sessionStorage.clear()
+    localStorage.clear()
   })
 
   it('renders the login route without throwing', async () => {

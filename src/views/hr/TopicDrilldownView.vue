@@ -1,51 +1,78 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download, Plus } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import SingleLineChart from '@/components/charts/SingleLineChart.vue'
 import ProgressBarLabeled from '@/components/charts/ProgressBarLabeled.vue'
-import { topicDrilldowns } from '@/mocks/topicDrilldown'
-import { topics } from '@/mocks/topics'
-import { actionItems } from '@/mocks/actionItems'
+import { useAsyncData } from '@/composables/useAsyncData'
+import * as dashboardApi from '@/api/dashboard'
+import * as feedApi from '@/api/feed'
 import type { Locale } from '@/types/common'
 
 const props = defineProps<{ id: string }>()
 const { t, locale } = useI18n()
 
-const drilldown = computed(() => topicDrilldowns[props.id])
-const topic = computed(() => topics.find((t2) => t2.id === props.id))
+const { data: topicList } = useAsyncData(() => dashboardApi.topics())
+const {
+  data: drilldown,
+  loading,
+  error,
+  reload,
+} = useAsyncData(() => dashboardApi.topicDrilldown(props.id))
+watch(() => props.id, reload)
+
+const { data: actionItems, reload: reloadActionItems } = useAsyncData(() => feedApi.actionItems())
+
+const topic = computed(() => topicList.value?.find((t2) => t2.id === props.id))
 
 const trendPoints = computed(
   () => drilldown.value?.trend.map((p) => ({ label: p.month.slice(5), value: p.score })) ?? [],
 )
 
+const relatedActionItems = computed(
+  () => (actionItems.value ?? []).filter((a) => topic.value && a.topic.th === topic.value.label.th),
+)
+
 const showAddAction = ref(false)
 const newAction = reactive({ assignee: '', targetDate: '' })
+const submitting = ref(false)
 
-function submitAction() {
-  if (!drilldown.value) return
-  actionItems.push({
-    id: `a-${Date.now()}`,
-    topic: topic.value?.label ?? { th: props.id, en: props.id },
-    assignee: newAction.assignee || 'TBD',
-    status: 'in_progress',
-    createdBy: 'HR',
-    level: 'full',
-    targetDate: newAction.targetDate || '',
-  })
-  newAction.assignee = ''
-  newAction.targetDate = ''
-  showAddAction.value = false
+async function submitAction() {
+  if (!topic.value || submitting.value) return
+  submitting.value = true
+  try {
+    await feedApi.createActionItem({
+      topic: topic.value.label,
+      topicId: topic.value.id,
+      assignee: newAction.assignee || 'TBD',
+      targetDate: newAction.targetDate || '',
+    })
+    newAction.assignee = ''
+    newAction.targetDate = ''
+    showAddAction.value = false
+    await reloadActionItems()
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
 <template>
   <HrLayout :breadcrumb="topic ? topic.label[locale as Locale] : ''">
-    <div v-if="drilldown" class="drilldown">
+    <p v-if="loading && !drilldown">{{ t('common.loading') }}</p>
+    <Alert v-else-if="error" variant="destructive">
+      <AlertDescription>
+        {{ t('common.loadError') }}
+        <Button variant="link" size="sm" @click="reload">{{ t('common.retry') }}</Button>
+      </AlertDescription>
+    </Alert>
+
+    <div v-else-if="drilldown" class="drilldown">
       <section class="panel score-panel">
         <div class="score-block">
           <span class="score-value">{{ drilldown.score.toFixed(1) }}/5</span>
@@ -95,7 +122,7 @@ function submitAction() {
         <section class="panel">
           <h2>{{ t('drilldown.sampleQuotes') }}</h2>
           <ul class="quotes">
-            <li v-for="(quote, i) in drilldown.sampleQuotes" :key="i">“{{ quote }}”</li>
+            <li v-for="(quote, i) in drilldown.sampleQuotes" :key="i">"{{ quote }}"</li>
           </ul>
         </section>
       </div>
@@ -111,11 +138,11 @@ function submitAction() {
         <div v-if="showAddAction" class="add-action-form">
           <Input v-model="newAction.assignee" placeholder="Assignee" class="max-w-48" />
           <Input v-model="newAction.targetDate" type="date" class="max-w-44" />
-          <Button @click="submitAction">{{ t('common.save') }}</Button>
+          <Button :disabled="submitting" @click="submitAction">{{ t('common.save') }}</Button>
           <Button variant="secondary" @click="showAddAction = false">{{ t('common.cancel') }}</Button>
         </div>
         <ul class="action-list">
-          <li v-for="item in actionItems.filter((a) => a.topic.th === topic?.label.th)" :key="item.id">
+          <li v-for="item in relatedActionItems" :key="item.id">
             {{ item.assignee }} — {{ item.targetDate }} ({{ item.status }})
           </li>
         </ul>

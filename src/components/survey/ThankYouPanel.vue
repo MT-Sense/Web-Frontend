@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { Check } from '@lucide/vue'
-import type { Survey } from '@/types/survey'
 import { Button } from '@/components/ui/button'
 
-defineProps<{ survey: Survey }>()
+defineProps<{ nextRoundDate?: string }>()
 const { t } = useI18n()
 </script>
 
@@ -15,7 +14,7 @@ const { t } = useI18n()
     </div>
     <h1>{{ t('survey.thankYouTitle') }}</h1>
     <p>{{ t('survey.thankYouBody') }}</p>
-    <p class="next-round">{{ t('survey.nextRound') }}: {{ survey.nextRoundDate }}</p>
+    <p v-if="nextRoundDate" class="next-round">{{ t('survey.nextRound') }}: {{ nextRoundDate }}</p>
     <Button as-child variant="secondary" class="mt-3">
       <router-link to="/voices">{{ t('survey.viewLastSummary') }}</router-link>
     </Button>

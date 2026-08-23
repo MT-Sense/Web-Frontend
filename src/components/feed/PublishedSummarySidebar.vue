@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { Locale } from '@/types/common'
-import { publishedSummaries } from '@/mocks/feed'
+import type { PublishedSummary } from '@/api/feed'
 
+defineProps<{ summaries: PublishedSummary[] }>()
 const { locale, t } = useI18n()
 </script>
 
 <template>
   <section class="published-summaries panel">
     <h2>{{ t('feed.publishedSummaries') }}</h2>
-    <article v-for="summary in publishedSummaries" :key="summary.id" class="summary-item">
+    <article v-for="summary in summaries" :key="summary.id" class="summary-item">
       <h3>{{ summary.title[locale as Locale] }}</h3>
       <p>{{ summary.body[locale as Locale] }}</p>
       <span class="date">{{ summary.publishedAt }}</span>

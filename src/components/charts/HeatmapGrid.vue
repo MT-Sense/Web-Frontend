@@ -2,15 +2,13 @@
 import { useI18n } from 'vue-i18n'
 import type { Locale } from '@/types/common'
 import type { Topic } from '@/types/topic'
-import type { Department } from '@/types/department'
-import { getHeatmapMatrix } from '@/mocks/heatmap'
+import type { HeatmapRow } from '@/api/dashboard'
 import EmptyOrSuppressed from '@/components/common/EmptyOrSuppressed.vue'
 
-const props = defineProps<{ topics: Topic[] }>()
-const emit = defineEmits<{ cellClick: [topicId: string, department: Department] }>()
+const props = defineProps<{ topics: Topic[]; rows: HeatmapRow[] }>()
+const emit = defineEmits<{ cellClick: [topicId: string, department: HeatmapRow['department']] }>()
 
 const { locale } = useI18n()
-const rows = getHeatmapMatrix()
 
 /** Lower score = worse = darker step of the accent ramp. */
 function heatClass(score: number) {
@@ -30,8 +28,8 @@ function heatClass(score: number) {
         {{ topic.label[locale as Locale] }}
       </div>
 
-      <template v-for="row in rows" :key="row.department.id">
-        <div class="row-header">{{ row.department.name[locale as Locale] }}</div>
+      <template v-for="row in props.rows" :key="row.department.id">
+        <div class="row-header">{{ row.department.name }}</div>
 
         <template v-if="row.department.respondentCount < 5">
           <div class="suppressed-row" :style="{ gridColumn: `span ${props.topics.length}` }">

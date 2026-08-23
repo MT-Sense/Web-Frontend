@@ -1,22 +1,51 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { Check, Circle } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useRoleLayout } from '@/composables/useRoleLayout'
 import { useAuthStore } from '@/stores/auth'
-import { auditLog } from '@/mocks/auditLog'
+import { useAsyncData } from '@/composables/useAsyncData'
+import * as authApi from '@/api/auth'
+import * as settingsApi from '@/api/settings'
 import { setLocale } from '@/i18n'
 
 const { t, locale } = useI18n()
 const { layoutComponent } = useRoleLayout()
 const auth = useAuthStore()
+const router = useRouter()
 
-const notifications = reactive({
-  newRound: auth.currentUser?.notifyNewRound ?? false,
-  monthlySummary: auth.currentUser?.notifyMonthlySummary ?? false,
-})
+async function handleLogoutAllDevices() {
+  await auth.logout()
+  router.push('/login')
+}
+
+const { data: history } = useAsyncData(() => settingsApi.submissionHistory())
+
+const savingNewRound = ref(false)
+const savingMonthlySummary = ref(false)
+
+async function updateNotifyNewRound(value: boolean) {
+  if (!auth.currentUser || savingNewRound.value) return
+  savingNewRound.value = true
+  try {
+    auth.currentUser = await authApi.updateMe({ notifyNewRound: value })
+  } finally {
+    savingNewRound.value = false
+  }
+}
+
+async function updateNotifyMonthlySummary(value: boolean) {
+  if (!auth.currentUser || savingMonthlySummary.value) return
+  savingMonthlySummary.value = true
+  try {
+    auth.currentUser = await authApi.updateMe({ notifyMonthlySummary: value })
+  } finally {
+    savingMonthlySummary.value = false
+  }
+}
 
 function toggleLocale() {
   setLocale(locale.value === 'th' ? 'en' : 'th')
@@ -30,7 +59,10 @@ function toggleLocale() {
         <h2>{{ t('settings.userInfo') }}</h2>
         <dl>
           <dt>{{ auth.currentUser.fullName }}</dt>
-          <dd>{{ t(`role.${auth.currentUser.role}`) }} · {{ auth.currentUser.department }}</dd>
+          <dd>
+            {{ t(`role.${auth.currentUser.role}`) }} · {{ auth.currentUser.department }}
+            <template v-if="auth.currentUser.position"> · {{ auth.currentUser.position }}</template>
+          </dd>
           <dd class="muted">{{ auth.currentUser.lastLoginAt }}</dd>
         </dl>
       </section>
@@ -38,11 +70,19 @@ function toggleLocale() {
       <section class="panel">
         <h2>{{ t('settings.notifications') }}</h2>
         <label class="toggle-row">
-          <Switch v-model="notifications.newRound" />
+          <Switch
+            :model-value="auth.currentUser.notifyNewRound"
+            :disabled="savingNewRound"
+            @update:model-value="updateNotifyNewRound"
+          />
           {{ t('settings.notifyNewRound') }}
         </label>
-        <label v-if="auth.currentRole === 'HR' || auth.currentRole === 'Executive'" class="toggle-row">
-          <Switch v-model="notifications.monthlySummary" />
+        <label v-if="auth.currentRole === 'admin' || auth.currentRole === 'executive'" class="toggle-row">
+          <Switch
+            :model-value="auth.currentUser.notifyMonthlySummary"
+            :disabled="savingMonthlySummary"
+            @update:model-value="updateNotifyMonthlySummary"
+          />
           {{ t('settings.notifyMonthlySummary') }}
         </label>
       </section>
@@ -59,15 +99,15 @@ function toggleLocale() {
         <p>{{ t('privacy.myPrivacyBody') }}</p>
         <h3>{{ t('settings.submittedHistory') }}</h3>
         <ul>
-          <li v-for="entry in auditLog" :key="entry.surveyId">
+          <li v-for="entry in history ?? []" :key="entry.periodId">
             <Check v-if="entry.status === 'submitted'" :size="14" class="log-icon done" aria-hidden="true" />
             <Circle v-else :size="14" class="log-icon" aria-hidden="true" />
-            {{ entry.surveyId }} — {{ entry.status }}
+            {{ entry.year }}-{{ String(entry.month).padStart(2, '0') }} — {{ entry.status }}
           </li>
         </ul>
         <div class="actions">
           <Button variant="secondary">{{ t('settings.changePassword') }}</Button>
-          <Button variant="secondary">{{ t('settings.logoutAllDevices') }}</Button>
+          <Button variant="secondary" @click="handleLogoutAllDevices">{{ t('settings.logoutAllDevices') }}</Button>
         </div>
       </section>
     </div>

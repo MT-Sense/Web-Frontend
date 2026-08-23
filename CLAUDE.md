@@ -8,7 +8,18 @@
 
 Stack: Vue 3 (`<script setup lang="ts">`) + TypeScript + Vite + Pinia + vue-router + vue-i18n + Tailwind v4 + shadcn-vue
 
-ตอนนี้ **ยังไม่มี backend** — ทุกหน้าใช้ mock data จาก `src/mocks/` และ auth เป็น role picker ปลอม
+ต่อกับ backend จริงแล้ว (`../Backend-Service`, Go/Fiber/GORM/Postgres) — ทุกหน้าเรียก API ผ่าน
+`src/api/*` (ไม่มี `src/mocks/` อีกต่อไป), login เป็นของจริง (`POST /api/auth/login`), role มา
+จาก JWT เสมอ ต้องรันทั้งสองฝั่งคู่กัน: `VITE_API_BASE_URL` ใน `.env.local` ชี้ไปที่ backend
+(default `http://localhost:8080`)
+
+Role enum ตอนนี้คือ `'admin' | 'executive' | 'employee'` (ตรงกับ DB enum ของ backend) —
+`admin` คือ role เดิมที่เคยเรียก HR ในโค้ด แต่ badge ที่ผู้ใช้เห็นยังขึ้น "HR" เหมือนเดิม (ผ่าน
+i18n key `role.admin`)
+
+แบบสอบถามเป็นโมเดลคงที่แล้ว: 1 คะแนนความพึงพอใจ (1-5) + ความคิดเห็นเปิด 1 ช่องต่อรอบ ไม่มี
+Form Builder แบบหลายคำถามอีกต่อไป — หน้า HR ที่เคยเป็น "จัดการฟอร์ม" ตอนนี้คือ "รอบสำรวจ"
+(`SurveyPeriodsView.vue`, `/survey-periods`) สำหรับเปิด/ปิดรอบเท่านั้น
 
 ## คำสั่ง
 
@@ -31,7 +42,7 @@ pnpm test:e2e     # playwright
 2. **n < 5 suppression** — ทุกกลุ่มที่มีผู้ตอบ < 5 คน ต้องถูกซ่อน ใช้ type `Suppressible<T>` (`src/types/common.ts`) + component `EmptyOrSuppressed.vue` ตอนต่อ backend จริงต้อง enforce ที่ API layer ด้วย (`HAVING COUNT(*) >= 5`) ห้ามพึ่ง frontend อย่างเดียว
 3. **Executive ไม่เห็นข้อความดิบ** — เห็นได้แค่ aggregate เท่านั้น
 4. **Feed ต้องผ่าน 2 ด่าน** — โพสต์จะขึ้น `/voices` ได้ต้อง `optedIn && published` (ดู `VoicesFeedView.vue`)
-5. **Role มาจาก backend เสมอ** — ห้ามให้ผู้ใช้เลือก role เอง (ตัว picker ใน `LoginView.vue` กับ `RoleSwitcherDev.vue` เป็น dev-only ต้องลบตอนต่อ backend)
+5. **Role มาจาก backend เสมอ** — ห้ามให้ผู้ใช้เลือก role เอง (dev role picker ถูกลบออกแล้ว — `LoginView.vue` เรียก `POST /api/auth/login` จริง, role มาจาก JWT)
 
 ถ้าจะแก้อะไรที่กระทบข้อพวกนี้ — **ถามก่อน**
 
@@ -44,12 +55,12 @@ src/
   components/
     ui/         ⚠️ shadcn-vue vendored — generated ด้วย CLI, lint ignore ไว้แล้ว
     charts/ common/ dashboard/ feed/ forms/ kpi/ layout/ survey/
-  composables/  useIsMobile, useRoleLayout
-  stores/       auth (Pinia, role ใน sessionStorage), surveyDraft (autosave ลง localStorage)
+  composables/  useIsMobile, useRoleLayout, useAsyncData (fetch-on-mount + loading/error)
+  api/          client.ts (fetch wrapper: token, 401→refresh, error surfacing) + 1 module ต่อ domain
+  stores/       auth (Pinia, JWT + refresh token ใน localStorage), surveyDraft (autosave ลง localStorage)
   router/       index.ts + guards.ts (requireRole)
   i18n/         locales/th.ts, locales/en.ts — คู่กันเสมอ
-  types/        มี comment อธิบาย domain rule ไว้ อ่านก่อนแก้
-  mocks/        ข้อมูลปลอม ภาษาไทย
+  types/        มี comment อธิบาย domain rule ไว้ อ่านก่อนแก้ — ตรงกับ backend DTO เกือบ 1:1
   styles/       tokens.css — ไฟล์ CSS global ไฟล์เดียว
 ```
 

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { SurveyQuestion } from '@/types/survey'
 
-const props = defineProps<{
-  question: SurveyQuestion
-  modelValue: string
-  tags: string[]
-  optedIn: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    tags: string[]
+    optedIn: boolean
+    tagSuggestions?: string[]
+    allowPublish?: boolean
+  }>(),
+  { tagSuggestions: () => [], allowPublish: true },
+)
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'update:tags': [tags: string[]]
@@ -40,9 +43,9 @@ function addCustomTag() {
       rows="4"
       @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
     />
-    <div v-if="question.tagSuggestions?.length" class="tags">
+    <div v-if="tagSuggestions.length" class="tags">
       <button
-        v-for="tag in question.tagSuggestions"
+        v-for="tag in tagSuggestions"
         :key="tag"
         type="button"
         class="tag"
@@ -58,7 +61,7 @@ function addCustomTag() {
         @keyup.enter="addCustomTag"
       />
     </div>
-    <label v-if="question.allowPublishOptIn" class="opt-in">
+    <label v-if="allowPublish" class="opt-in">
       <input
         type="checkbox"
         :checked="optedIn"

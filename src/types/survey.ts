@@ -1,40 +1,24 @@
-import type { LocalizedText } from './common'
-
-export type QuestionType = 'scale5' | 'enps' | 'singleChoice' | 'multiChoice' | 'openText'
-
-export interface SurveyQuestion {
+/** Fixed 2-field survey model, matching the backend's survey_responses schema: one
+ * satisfaction score (1-5) plus an optional open comment per period — no more multi-step,
+ * multi-question-type forms. */
+export interface SurveyPeriod {
   id: string
-  type: QuestionType
-  text: LocalizedText
-  required: boolean
-  metricMapping?: string
-  sendToAi?: boolean
-  options?: LocalizedText[]
-  tagSuggestions?: string[]
-  allowPublishOptIn?: boolean
+  month: number
+  year: number
+  opensAt: string
+  closesAt: string
+  isOpen: boolean
+  alreadySubmitted: boolean
+  responseCount: number
 }
 
-export interface SurveyStep {
-  id: string
-  title: LocalizedText
-  estimatedMinutes: number
-  questions: SurveyQuestion[]
+export interface SubmitResponsePayload {
+  satisfactionScore: number
+  commentText: string
+  optedInToFeed: boolean
+  tags: string[]
 }
 
-export interface Survey {
-  id: string
-  title: LocalizedText
-  cadence: string
-  nextRoundDate: string
-  steps: SurveyStep[]
-}
-
-export type AnswerValue = string | number | string[]
-
-/** Not linked to CurrentUser — identified only by a random per-submission token. */
-export interface SurveyResponse {
-  anonymousToken: string
-  surveyId: string
+export interface SubmitResponseReceipt {
   submittedAt: string
-  answers: { questionId: string; value: AnswerValue; tags?: string[]; optedInToFeed?: boolean }[]
 }

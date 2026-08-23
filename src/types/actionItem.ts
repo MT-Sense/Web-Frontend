@@ -8,7 +8,7 @@ export interface ActionItem {
   topic: LocalizedText
   assignee: string
   status: ActionItemStatus
-  createdBy: 'HR' | 'Executive'
+  createdBy: 'admin' | 'executive'
   level: ActionItemLevel
   targetDate: string
 }

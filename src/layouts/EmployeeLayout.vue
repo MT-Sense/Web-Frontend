@@ -14,7 +14,7 @@ const { t } = useI18n()
 
 const items = computed<NavItem[]>(() => [
   { label: t('nav.voices'), to: '/voices', icon: MessageSquare },
-  { label: t('nav.mySurveys'), to: '/survey/demo-1', icon: FileEdit },
+  { label: t('nav.mySurveys'), to: '/survey', icon: FileEdit },
   { label: t('nav.settings'), to: '/settings', icon: Settings },
 ])
 </script>

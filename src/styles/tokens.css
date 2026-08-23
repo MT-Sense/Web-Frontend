@@ -230,6 +230,10 @@ a {
   );
 }
 
+/* Currently unused — App.vue dropped the <Transition> wrapper around routed views because
+   the pinned Vue 3.6 RC leaves mode="out-in" stuck mid-leave (old view never unmounts) when
+   combined with a keyed dynamic component driven by async route components. Rules kept here
+   in case a future Vue version fixes it and the transition gets re-added. */
 .page-enter-active,
 .page-leave-active {
   transition:

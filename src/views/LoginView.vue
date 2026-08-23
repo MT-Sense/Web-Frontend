@@ -4,9 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Lock } from '@lucide/vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
-import RoleBadge from '@/components/layout/RoleBadge.vue'
 import { useAuthStore } from '@/stores/auth'
-import type { Role } from '@/types/user'
+import { ApiError } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -18,15 +17,25 @@ const router = useRouter()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const submitting = ref(false)
+const errorMessage = ref('')
 
-// Dev-only stand-in for real auth: role is detected server-side after login,
-// never chosen by the user. This picker exists only because there's no backend yet.
-const devRole = ref<Role>('HR')
-const roles: Role[] = ['HR', 'Executive', 'Employee']
-
-function handleSubmit() {
-  auth.switchRole(devRole.value)
-  router.push(auth.homeRouteFor(devRole.value))
+async function handleSubmit() {
+  if (submitting.value) return
+  errorMessage.value = ''
+  submitting.value = true
+  try {
+    await auth.login(email.value, password.value)
+    router.push(auth.homeRouteFor(auth.currentRole!))
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      errorMessage.value = t('login.invalidCredentials')
+    } else {
+      errorMessage.value = t('login.genericError')
+    }
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -42,11 +51,11 @@ function handleSubmit() {
       <form @submit.prevent="handleSubmit">
         <div class="field">
           <label for="login-email">{{ t('login.email') }}</label>
-          <Input id="login-email" v-model="email" type="email" autocomplete="username" placeholder="name@company.com" />
+          <Input id="login-email" v-model="email" type="email" autocomplete="username" placeholder="name@company.com" required />
         </div>
         <div class="field">
           <label for="login-password">{{ t('login.password') }}</label>
-          <Input id="login-password" v-model="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+          <Input id="login-password" v-model="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
         </div>
 
         <div class="row">
@@ -57,23 +66,11 @@ function handleSubmit() {
           <a href="#" @click.prevent>{{ t('login.forgotPassword') }}</a>
         </div>
 
-        <div class="dev-role-picker">
-          <p class="dev-hint">{{ t('login.devHint') }}</p>
-          <div class="role-options">
-            <button
-              v-for="role in roles"
-              :key="role"
-              type="button"
-              class="role-option"
-              :class="{ active: devRole === role }"
-              @click="devRole = role"
-            >
-              <RoleBadge :role="role" />
-            </button>
-          </div>
-        </div>
+        <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
 
-        <Button type="submit" size="lg" class="w-full">{{ t('login.submit') }}</Button>
+        <Button type="submit" size="lg" class="w-full" :disabled="submitting">
+          {{ submitting ? t('login.submitting') : t('login.submit') }}
+        </Button>
       </form>
     </div>
   </AuthLayout>
@@ -157,42 +154,14 @@ h1 {
   cursor: pointer;
 }
 
-.dev-role-picker {
-  border: 1px dashed var(--color-border);
+.error-message {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-.dev-hint {
-  margin: 0 0 var(--space-3);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-}
-
-.role-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.role-option {
-  border: 2px solid transparent;
-  background: none;
-  border-radius: 999px;
-  cursor: pointer;
-  padding: 0;
-  transition:
-    border-color 150ms ease,
-    transform 150ms ease;
-}
-
-.role-option:active {
-  transform: scale(0.94);
-}
-
-.role-option.active {
-  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
 }
 
 @media (max-width: 480px) {

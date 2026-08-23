@@ -1,34 +1,29 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download, Mail } from '@lucide/vue'
 import ExecutiveLayout from '@/layouts/ExecutiveLayout.vue'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
-import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import RadarChart from '@/components/charts/RadarChart.vue'
 import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import DecisionItemsList from '@/components/dashboard/DecisionItemsList.vue'
-import { executiveHealth } from '@/mocks/kpis'
-import { decisionItems } from '@/mocks/insights'
-import { topics } from '@/mocks/topics'
-import { departments, tenureBuckets } from '@/mocks/departments'
 import { visible } from '@/types/common'
 import type { Locale } from '@/types/common'
+import { useAsyncData } from '@/composables/useAsyncData'
+import * as dashboardApi from '@/api/dashboard'
 
 const { t, locale } = useI18n()
 
-const selectedQuarter = ref('2026-q3')
-const quarterOptions = [
-  { value: '2026-q1', label: 'Q1 2026' },
-  { value: '2026-q2', label: 'Q2 2026' },
-  { value: '2026-q3', label: 'Q3 2026' },
-]
+const { data: topicList } = useAsyncData(() => dashboardApi.topics())
+const { data: departmentList } = useAsyncData(() => dashboardApi.departments())
+const { data: executiveHealth, loading, error, reload } = useAsyncData(() => dashboardApi.executiveSummary())
 
 const radarAxes = computed(() =>
-  executiveHealth.radar.map((r) => {
-    const topic = topics.find((t2) => t2.id === r.topicId)
+  (executiveHealth.value?.radar ?? []).map((r) => {
+    const topic = topicList.value?.find((t2) => t2.id === r.topicId)
     return {
       label: topic ? topic.label[locale.value as Locale] : r.topicId,
       thisMonth: r.thisMonth,
@@ -38,30 +33,26 @@ const radarAxes = computed(() =>
 )
 
 const departmentBarData = computed(() =>
-  executiveHealth.departmentComparison.map((d) => {
-    const dept = departments.find((dep) => dep.id === d.departmentId)
+  (executiveHealth.value?.departmentComparison ?? []).map((d) => {
+    const dept = departmentList.value?.find((dep) => dep.id === d.departmentId)
     return {
-      label: dept ? dept.name[locale.value as Locale] : d.departmentId,
+      label: dept ? dept.name : d.departmentId,
       value: d.score,
     }
   }),
 )
 
-const tenureBarData = computed(() =>
-  executiveHealth.tenureComparison.map((t2) => {
-    const bucket = tenureBuckets.find((b) => b.bucket === t2.bucket)
-    return {
-      label: bucket ? bucket.label[locale.value as Locale] : t2.bucket,
-      value: visible(t2.score),
-    }
-  }),
+const positionBarData = computed(() =>
+  (executiveHealth.value?.positionComparison ?? []).map((p) => ({
+    label: p.name,
+    value: visible(p.score),
+  })),
 )
 </script>
 
 <template>
   <ExecutiveLayout :breadcrumb="t('executive.orgHealth')">
     <div class="toolbar">
-      <DropdownSelect v-model="selectedQuarter" :options="quarterOptions" />
       <div class="actions">
         <Button variant="secondary">
           <Download :size="16" aria-hidden="true" />
@@ -76,37 +67,47 @@ const tenureBarData = computed(() =>
 
     <PrivacyBanner variant="executive-rule" />
 
-    <section class="panel health-card">
-      <h2>{{ t('executive.orgHealth') }}</h2>
-      <div class="health-body">
-        <span class="score">{{ executiveHealth.score }}/100</span>
-        <SentimentBar :sentiment="executiveHealth.sentiment" />
-      </div>
-    </section>
+    <p v-if="loading && !executiveHealth">{{ t('common.loading') }}</p>
+    <Alert v-else-if="error" variant="destructive">
+      <AlertDescription>
+        {{ t('common.loadError') }}
+        <Button variant="link" size="sm" @click="reload">{{ t('common.retry') }}</Button>
+      </AlertDescription>
+    </Alert>
 
-    <section class="panel">
-      <h2>{{ t('executive.radarTitle') }}</h2>
-      <div class="radar-wrap">
-        <RadarChart :axes="radarAxes" />
-        <div class="legend">
-          <span class="legend-item"><span class="swatch swatch-this" />{{ t('executive.thisMonth') }}</span>
-          <span class="legend-item"><span class="swatch swatch-last" />{{ t('executive.lastMonth') }}</span>
+    <template v-else-if="executiveHealth">
+      <section class="panel health-card">
+        <h2>{{ t('executive.orgHealth') }}</h2>
+        <div class="health-body">
+          <span class="score">{{ executiveHealth.score }}/100</span>
+          <SentimentBar :sentiment="executiveHealth.sentiment" />
         </div>
+      </section>
+
+      <section class="panel">
+        <h2>{{ t('executive.radarTitle') }}</h2>
+        <div class="radar-wrap">
+          <RadarChart :axes="radarAxes" />
+          <div class="legend">
+            <span class="legend-item"><span class="swatch swatch-this" />{{ t('executive.thisMonth') }}</span>
+            <span class="legend-item"><span class="swatch swatch-last" />{{ t('executive.lastMonth') }}</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="two-col">
+        <section class="panel">
+          <h2>{{ t('executive.departmentScores') }}</h2>
+          <HorizontalBarChart :data="departmentBarData" :show-values="false" />
+        </section>
+        <section class="panel">
+          <h2>{{ t('executive.positionScores') }}</h2>
+          <HorizontalBarChart :data="positionBarData" :show-values="true" :max="5" />
+        </section>
       </div>
-    </section>
 
-    <div class="two-col">
-      <section class="panel">
-        <h2>{{ t('executive.departmentScores') }}</h2>
-        <HorizontalBarChart :data="departmentBarData" :show-values="false" />
-      </section>
-      <section class="panel">
-        <h2>{{ t('executive.tenureScores') }}</h2>
-        <HorizontalBarChart :data="tenureBarData" :show-values="true" :max="5" />
-      </section>
-    </div>
-
-    <DecisionItemsList :items="decisionItems" />
+      <DecisionItemsList :items="executiveHealth.decisionItems" />
+    </template>
   </ExecutiveLayout>
 </template>
 
@@ -114,7 +115,7 @@ const tenureBarData = computed(() =>
 .toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--space-3);
   flex-wrap: wrap;
 }

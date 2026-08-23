@@ -2,8 +2,9 @@
 import { useI18n } from 'vue-i18n'
 import { CircleCheck, LoaderCircle } from '@lucide/vue'
 import type { Locale } from '@/types/common'
-import { actionItems } from '@/mocks/actionItems'
+import type { ActionItem } from '@/types/actionItem'
 
+defineProps<{ items: ActionItem[] }>()
 const { locale, t } = useI18n()
 </script>
 
@@ -11,7 +12,7 @@ const { locale, t } = useI18n()
   <section class="action-items panel">
     <h2>{{ t('feed.actionsDone') }}</h2>
     <ul>
-      <li v-for="item in actionItems" :key="item.id">
+      <li v-for="item in items" :key="item.id">
         <CircleCheck
           v-if="item.status === 'done'"
           :size="16"

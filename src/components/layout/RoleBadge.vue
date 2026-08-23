@@ -6,9 +6,9 @@ const props = defineProps<{ role: Role }>()
 const { t } = useI18n()
 
 const classByRole: Record<Role, string> = {
-  HR: 'badge-hr',
-  Executive: 'badge-executive',
-  Employee: 'badge-employee',
+  admin: 'badge-hr',
+  executive: 'badge-executive',
+  employee: 'badge-employee',
 }
 </script>
 

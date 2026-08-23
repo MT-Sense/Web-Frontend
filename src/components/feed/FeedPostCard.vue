@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronUp } from '@lucide/vue'
 import type { FeedPost } from '@/types/feedPost'
+import * as feedApi from '@/api/feed'
 
 const props = defineProps<{ post: FeedPost }>()
+const emit = defineEmits<{ voted: [post: FeedPost] }>()
 const { t } = useI18n()
+
+const voting = ref(false)
 
 const netVotes = computed(() => props.post.upvotes - props.post.downvotes)
 
@@ -15,16 +19,29 @@ const fontSize = computed(() => {
   const ratio = Math.min(props.post.upvotes / 150, 1)
   return `${min + ratio * (max - min)}px`
 })
+
+async function castVote(direction: 1 | -1) {
+  if (voting.value) return
+  voting.value = true
+  try {
+    const updated = await feedApi.vote(props.post.id, direction)
+    emit('voted', updated)
+  } catch {
+    // already-voted (409) or network error — silently ignore, the count just won't move
+  } finally {
+    voting.value = false
+  }
+}
 </script>
 
 <template>
   <article class="feed-post panel">
     <div class="votes">
-      <button type="button" class="arrow" aria-label="upvote">
+      <button type="button" class="arrow" aria-label="upvote" :disabled="voting" @click="castVote(1)">
         <ChevronUp :size="16" aria-hidden="true" />
       </button>
       <span class="count">{{ netVotes }}</span>
-      <button type="button" class="arrow" aria-label="downvote">
+      <button type="button" class="arrow" aria-label="downvote" :disabled="voting" @click="castVote(-1)">
         <ChevronDown :size="16" aria-hidden="true" />
       </button>
     </div>

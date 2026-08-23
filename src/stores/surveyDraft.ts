@@ -1,68 +1,53 @@
-import { ref, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import { defineStore } from 'pinia'
-import type { AnswerValue } from '@/types/survey'
 
-interface DraftAnswer {
-  value: AnswerValue
-  tags?: string[]
-  optedInToFeed?: boolean
+/** Single-screen draft for the fixed satisfaction_score + comment_text survey — no more
+ * multi-step/multi-question state, just autosave for the one open period. */
+export interface SurveyDraft {
+  periodId: string | null
+  score: number | null
+  commentText: string
+  tags: string[]
+  optedIn: boolean
 }
 
-function storageKey(surveyId: string) {
-  return `mt-sense-survey-draft:${surveyId}`
+function storageKey(periodId: string) {
+  return `mt-sense-survey-draft:${periodId}`
+}
+
+function emptyDraft(periodId: string | null): SurveyDraft {
+  return { periodId, score: null, commentText: '', tags: [], optedIn: false }
 }
 
 export const useSurveyDraftStore = defineStore('surveyDraft', () => {
-  const surveyId = ref<string | null>(null)
-  const stepIndex = ref(0)
-  const answers = ref<Record<string, DraftAnswer>>({})
+  const draft = reactive<SurveyDraft>(emptyDraft(''))
 
-  function load(id: string) {
-    surveyId.value = id
-    stepIndex.value = 0
-    answers.value = {}
-    const raw = localStorage.getItem(storageKey(id))
+  function load(periodId: string) {
+    Object.assign(draft, emptyDraft(periodId))
+    const raw = localStorage.getItem(storageKey(periodId))
     if (raw) {
       try {
-        const parsed = JSON.parse(raw)
-        stepIndex.value = parsed.stepIndex ?? 0
-        answers.value = parsed.answers ?? {}
+        const parsed = JSON.parse(raw) as Partial<SurveyDraft>
+        Object.assign(draft, parsed, { periodId })
       } catch {
         // ignore malformed draft
       }
     }
   }
 
-  function setAnswer(questionId: string, draft: DraftAnswer) {
-    answers.value[questionId] = draft
-  }
-
-  function goNext() {
-    stepIndex.value += 1
-  }
-
-  function goBack() {
-    if (stepIndex.value > 0) stepIndex.value -= 1
-  }
-
-  function clear(id: string) {
-    localStorage.removeItem(storageKey(id))
-    surveyId.value = null
-    stepIndex.value = 0
-    answers.value = {}
+  function clear() {
+    if (draft.periodId) localStorage.removeItem(storageKey(draft.periodId))
+    Object.assign(draft, emptyDraft(draft.periodId))
   }
 
   watch(
-    [surveyId, stepIndex, answers],
+    draft,
     () => {
-      if (!surveyId.value) return
-      localStorage.setItem(
-        storageKey(surveyId.value),
-        JSON.stringify({ stepIndex: stepIndex.value, answers: answers.value }),
-      )
+      if (!draft.periodId) return
+      localStorage.setItem(storageKey(draft.periodId), JSON.stringify(draft))
     },
     { deep: true },
   )
 
-  return { surveyId, stepIndex, answers, load, setAnswer, goNext, goBack, clear }
+  return { draft, load, clear }
 })

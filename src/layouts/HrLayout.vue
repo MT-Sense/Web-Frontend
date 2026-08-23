@@ -20,7 +20,7 @@ const items = computed<NavItem[]>(() => [
   { label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
   { label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
   { label: t('nav.feed'), to: '/voices', icon: MessageSquare },
-  { label: t('nav.forms'), to: '/forms/builder/demo-1', icon: Wrench },
+  { label: t('nav.periods'), to: '/survey-periods', icon: Wrench },
   { label: t('nav.reports'), to: '/dashboard', icon: Upload },
   { label: t('nav.settings'), to: '/settings', icon: Settings },
 ])

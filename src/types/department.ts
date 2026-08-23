@@ -1,13 +1,9 @@
-/** Drives n<5 suppression: any view grouped by department must check respondentCount. */
+/** Drives n<5 suppression: any view grouped by department must check respondentCount.
+ * name is a plain string — the backend's departments table has a single VARCHAR column,
+ * not a localized pair, so department/position names are not translated (only UI chrome
+ * strings are, via i18n). */
 export interface Department {
   id: string
-  name: LocalizedName
+  name: string
   respondentCount: number
 }
-
-export interface LocalizedName {
-  th: string
-  en: string
-}
-
-export type TenureBucket = '<1y' | '1-3y' | '3-5y' | '5y+'

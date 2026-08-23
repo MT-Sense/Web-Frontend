@@ -5,13 +5,13 @@ import ExecutiveLayout from '@/layouts/ExecutiveLayout.vue'
 import EmployeeLayout from '@/layouts/EmployeeLayout.vue'
 
 /** Resolves the correct chrome (sidebar/header) for routes shared across all
- * three roles (/voices, /survey/:id, /settings), keyed off the current mock role. */
+ * three roles (/voices, /survey, /settings), keyed off the current role. */
 export function useRoleLayout() {
   const auth = useAuthStore()
 
   const layoutComponent = computed(() => {
-    if (auth.currentRole === 'HR') return HrLayout
-    if (auth.currentRole === 'Executive') return ExecutiveLayout
+    if (auth.currentRole === 'admin') return HrLayout
+    if (auth.currentRole === 'executive') return ExecutiveLayout
     return EmployeeLayout
   })
 
