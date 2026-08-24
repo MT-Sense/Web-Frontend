@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* Colors, radii and shadows live in @theme (not :root) so Tailwind both emits them
+   as CSS custom properties for the existing scoped styles AND generates matching
+   utilities (bg-hr, text-heat-3, shadow-md, rounded-md). */
+@theme {
+  --color-bg: #f6f5fb;
+  --color-surface: #ffffff;
+  --color-text: #1c1b24;
+  --color-text-muted: #75798c;
+  --color-text-subtle: #9397ab;
+
+  --color-accent-100: #fff3e4;
+  --color-accent-200: #ffe3bf;
+  --color-accent-300: #facb8d;
+  --color-accent-400: #e1ad66;
+  --color-accent-500: #c28d41;
+  --color-accent-600: #a06f24;
+  --color-accent-700: #7d5411;
+  --color-accent-800: #5a3b0a;
+  --color-accent-900: #3a270d;
+
+  /* role badge colors — the design import has no opinion on these, carried forward */
+  --color-hr: #3653e0;
+  --color-hr-bg: #eef0fd;
+  --color-executive: #7a3be0;
+  --color-executive-bg: #f2ecfd;
+  --color-employee: #1b9e6f;
+  --color-employee-bg: #e6f6ef;
+
+  /* sentiment colors — likewise unchanged */
+  --color-positive: #1b9e6f;
+  --color-positive-bg: #e6f6ef;
+  --color-negative: #d64545;
+  --color-negative-bg: #fbe9e9;
+  --color-danger: #d64545;
+  --color-warning: #c98a1c;
+
+  /* heatmap scale — the accent ramp, darker = worse score */
+  --color-heat-1: #3a270d;
+  --color-heat-2: #5a3b0a;
+  --color-heat-3: #7d5411;
+  --color-heat-4: #a06f24;
+  --color-heat-5: #e1ad66;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(30, 25, 50, 0.08);
+  --shadow-md: 0 4px 16px rgba(30, 25, 50, 0.1);
+  --shadow-lg: 0 16px 36px rgba(30, 25, 50, 0.16);
+
+  --font-sans:
+    'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: var(--font-sans);
+}
+
+:root {
+  /* `neutral` is a Tailwind default palette namespace, so the sentiment-neutral color
+     stays a plain custom property rather than a @theme entry that would shadow it. */
+  --color-neutral: #c98a1c;
+  --color-neutral-bg: #fbf1e0;
+
+  --color-primary: #b68235;
+  --color-primary-hover: #a06f24;
+  --color-primary-bg: #fff3e4;
+  --color-border: color-mix(in srgb, #1c1b24 12%, transparent);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 72px;
+  --header-height: 64px;
+
+  /* shadcn semantic set */
+  --radius: 0.5rem;
+  --background: #f6f5fb;
+  --foreground: #1c1b24;
+  --card: #ffffff;
+  --card-foreground: #1c1b24;
+  --popover: #ffffff;
+  --popover-foreground: #1c1b24;
+  --primary: #b68235;
+  --primary-foreground: #fff3e4;
+  --secondary: #f3f5fe;
+  --secondary-foreground: #1c1b24;
+  --muted: #f3f5fe;
+  --muted-foreground: #75798c;
+  --accent: #fff3e4;
+  --accent-foreground: #7d5411;
+  --destructive: #d64545;
+  --destructive-foreground: #ffffff;
+  --border: color-mix(in srgb, #1c1b24 12%, transparent);
+  --input: color-mix(in srgb, #1c1b24 12%, transparent);
+  --ring: #b68235;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* shadcn components use bare `border` utilities and rely on this default border color */
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The one card surface: flat fill, no border, soft elevation. Used by every panel
+   and card in the app so they can't drift apart. */
+.panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.elev-sm {
+  box-shadow: var(--shadow-sm);
+}
+.elev-md {
+  box-shadow: var(--shadow-md);
+}
+.elev-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Freestanding rules fade out at both ends — a Nocturne signature. */
+.rule {
+  height: 1px;
+  border: 0;
+  margin: var(--space-4) 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border) 48px,
+    var(--color-border) calc(100% - 48px),
+    transparent
+  );
+}
+
+/* Currently unused — App.vue dropped the <Transition> wrapper around routed views because
+   the pinned Vue 3.6 RC leaves mode="out-in" stuck mid-leave (old view never unmounts) when
+   combined with a keyed dynamic component driven by async route components. Rules kept here
+   in case a future Vue version fixes it and the transition gets re-added. */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
+}

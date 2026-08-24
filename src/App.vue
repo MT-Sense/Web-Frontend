@@ -1,11 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <router-view v-slot="{ Component, route }">
+    <component :is="Component" :key="route.fullPath" />
+  </router-view>
 </template>
-
-<style scoped></style>
