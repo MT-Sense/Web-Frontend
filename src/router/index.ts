@@ -19,6 +19,22 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
     },
     {
+      path: '/signup',
+      name: 'signup',
+      component: () => import('@/views/onboarding/SignupView.vue'),
+    },
+    {
+      path: '/join',
+      name: 'join',
+      component: () => import('@/views/onboarding/JoinView.vue'),
+    },
+    {
+      path: '/join/:code/register',
+      name: 'join-register',
+      component: () => import('@/views/onboarding/RegisterAccountView.vue'),
+      props: true,
+    },
+    {
       path: '/dashboard',
       name: 'hr-dashboard',
       component: () => import('@/views/hr/HrDashboardView.vue'),

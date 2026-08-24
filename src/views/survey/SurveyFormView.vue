@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useRoleLayout } from '@/composables/useRoleLayout'
@@ -7,15 +7,16 @@ import { useIsMobile } from '@/composables/useIsMobile'
 import { useSurveyDraftStore } from '@/stores/surveyDraft'
 import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
 import QuestionRendererScale from '@/components/survey/QuestionRendererScale.vue'
+import QuestionRendererEnps from '@/components/survey/QuestionRendererEnps.vue'
 import QuestionRendererOpenText from '@/components/survey/QuestionRendererOpenText.vue'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowRight } from '@lucide/vue'
 import * as surveyApi from '@/api/survey'
 import { ApiError } from '@/api/client'
-import type { SurveyPeriod } from '@/types/survey'
+import type { SurveyPeriod, ExtraQuestionDef } from '@/types/survey'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { layoutComponent } = useRoleLayout()
 const { isMobile } = useIsMobile()
 const router = useRouter()
@@ -24,17 +25,28 @@ const draftStore = useSurveyDraftStore()
 const tagSuggestions = ['ภาระงาน', 'สวัสดิการ', 'สื่อสาร']
 
 const period = ref<SurveyPeriod | null>(null)
+const catalog = ref<ExtraQuestionDef[]>([])
+const extraAnswers = reactive<Record<string, number>>({})
 const loading = ref(true)
 const error = ref(false)
 const submitting = ref(false)
 const submitError = ref(false)
 
+// Only the questions this period actually enabled, in catalog order — not a form builder,
+// just a filtered view of the fixed catalog (see dto.ExtraQuestionCatalog on the backend).
+const enabledExtraQuestions = computed(() => {
+  const enabled = new Set(period.value?.enabledExtraQuestions ?? [])
+  return catalog.value.filter((q) => enabled.has(q.key))
+})
+
 onMounted(async () => {
   loading.value = true
   error.value = false
   try {
-    period.value = await surveyApi.current()
-    draftStore.load(period.value.id)
+    const [currentPeriod, fullCatalog] = await Promise.all([surveyApi.current(), surveyApi.catalog()])
+    period.value = currentPeriod
+    catalog.value = fullCatalog
+    draftStore.load(currentPeriod.id)
   } catch (err) {
     if (!(err instanceof ApiError && err.status === 404)) {
       error.value = true
@@ -54,6 +66,7 @@ async function handleSubmit() {
       commentText: draftStore.draft.commentText,
       optedInToFeed: draftStore.draft.optedIn,
       tags: draftStore.draft.tags,
+      extraAnswers: { ...extraAnswers },
     })
     draftStore.clear()
     router.push('/survey/thank-you')
@@ -94,6 +107,21 @@ async function handleSubmit() {
             v-model:tags="draftStore.draft.tags"
             v-model:opted-in="draftStore.draft.optedIn"
             :tag-suggestions="tagSuggestions"
+          />
+        </div>
+
+        <div v-for="q in enabledExtraQuestions" :key="q.key" class="question-block">
+          <label class="question-text">{{ locale === 'th' ? q.label.th : q.label.en }}</label>
+          <QuestionRendererEnps
+            v-if="q.type === 'enps_0_10'"
+            :model-value="extraAnswers[q.key] ?? null"
+            @update:model-value="(v: number) => (extraAnswers[q.key] = v)"
+          />
+          <QuestionRendererScale
+            v-else
+            :model-value="extraAnswers[q.key] ?? null"
+            :circular="isMobile"
+            @update:model-value="(v: number) => (extraAnswers[q.key] = v)"
           />
         </div>
 

@@ -19,7 +19,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import * as dashboardApi from '@/api/dashboard'
 import * as periodsApi from '@/api/periods'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 
 const selectedPeriod = ref('')
@@ -42,13 +42,14 @@ watch(periods, (list) => {
 
 async function loadDashboard() {
   const period = selectedPeriod.value || undefined
-  const [kpis, heatmap, wordCloud, insight] = await Promise.all([
+  const [kpis, heatmap, wordCloud, insight, extraQuestions] = await Promise.all([
     dashboardApi.hrKpis(period),
     dashboardApi.heatmap(period),
     dashboardApi.wordCloud(period),
     dashboardApi.insight(period),
+    dashboardApi.extraQuestions(period),
   ])
-  return { kpis, heatmap, wordCloud, insight }
+  return { kpis, heatmap, wordCloud, insight, extraQuestions }
 }
 
 const { data, loading, error, reload } = useAsyncData(loadDashboard)
@@ -154,6 +155,19 @@ function filterFeedByTag(topicId: string) {
         <h2>{{ t('wordcloud.title') }}</h2>
         <WordCloud :terms="data.wordCloud" @term-click="filterFeedByTag" />
       </section>
+
+      <section v-if="data.extraQuestions.length > 0" class="panel">
+        <h2>{{ t('periods.extraQuestions.resultsTitle') }}</h2>
+        <ul class="extra-question-results">
+          <li v-for="q in data.extraQuestions" :key="q.key">
+            <span class="eq-label">{{ locale === 'th' ? q.label.th : q.label.en }}</span>
+            <span class="eq-value">
+              {{ q.average }}{{ q.type === 'enps_0_10' ? '/10' : '/5' }}
+              <span class="eq-count">({{ q.respondentCount }} {{ t('drilldown.respondents') }})</span>
+            </span>
+          </li>
+        </ul>
+      </section>
     </template>
   </HrLayout>
 </template>
@@ -203,6 +217,44 @@ function filterFeedByTag(topicId: string) {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: var(--space-4);
+}
+
+.extra-question-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.extra-question-results li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.extra-question-results li:last-child {
+  border-bottom: none;
+}
+
+.eq-label {
+  font-weight: 600;
+}
+
+.eq-value {
+  font-weight: 700;
+  color: var(--color-accent-700);
+}
+
+.eq-count {
+  font-weight: 400;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
 }
 
 @media (max-width: 1200px) {

@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { CurrentUser, Role } from '@/types/user'
 import * as authApi from '@/api/auth'
+import type { AuthResponse } from '@/api/auth'
 import { setAccessToken, setRefreshHandler, setUnauthorizedHandler } from '@/api/client'
 
 const REFRESH_KEY = 'mt-sense-refresh-token'
@@ -39,6 +40,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(email: string, password: string) {
     const res = await authApi.login(email, password)
+    persistSession(res.accessToken, res.refreshToken, res.user)
+  }
+
+  /** Used by the signup/join-and-register flows, which mint a session the same way login
+   * does but via a different endpoint — keeps SignupView/RegisterAccountView from reaching
+   * into persistSession directly. */
+  function completeRegistration(res: AuthResponse) {
     persistSession(res.accessToken, res.refreshToken, res.user)
   }
 
@@ -98,5 +106,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     hydrate,
     homeRouteFor,
+    completeRegistration,
   }
 })

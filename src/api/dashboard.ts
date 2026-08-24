@@ -6,6 +6,7 @@ import type { HrKpis, ExecutiveHealth } from '@/types/kpi'
 import type { AiInsight, UrgentIssue, WordCloudTerm } from '@/types/insight'
 import type { Alert } from '@/types/alert'
 import type { Suppressible } from '@/types/common'
+import type { ExtraQuestionResult } from '@/types/survey'
 
 export interface HeatmapCell {
   topicId: string
@@ -58,6 +59,10 @@ export function insight(period?: string) {
 
 export function alerts(period?: string) {
   return api.get<Alert[]>(`/api/dashboard/hr/alerts${periodQuery(period)}`)
+}
+
+export function extraQuestions(period?: string) {
+  return api.get<ExtraQuestionResult[]>(`/api/dashboard/hr/extra-questions${periodQuery(period)}`)
 }
 
 export function topicDrilldown(topicId: string, period?: string) {

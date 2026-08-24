@@ -7,16 +7,26 @@ import PrivacySettingsPanel from '@/components/forms/PrivacySettingsPanel.vue'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as periodsApi from '@/api/periods'
+import * as surveyApi from '@/api/survey'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const { data: periods, loading, error, reload } = useAsyncData(() => periodsApi.list())
+const { data: catalog } = useAsyncData(() => surveyApi.catalog())
 
 const creating = ref(false)
 const closingId = ref<string | null>(null)
+const selectedExtraQuestions = ref<string[]>([])
+
+function toggleExtraQuestion(key: string, checked: boolean) {
+  selectedExtraQuestions.value = checked
+    ? [...selectedExtraQuestions.value, key]
+    : selectedExtraQuestions.value.filter((k) => k !== key)
+}
 
 function nextMonthYear(): { month: number; year: number } {
   const latest = periods.value?.[0]
@@ -28,7 +38,7 @@ async function openNextRound() {
   if (creating.value) return
   creating.value = true
   try {
-    await periodsApi.create(nextMonthYear())
+    await periodsApi.create({ ...nextMonthYear(), enabledExtraQuestions: selectedExtraQuestions.value })
     await reload()
   } finally {
     creating.value = false
@@ -62,6 +72,18 @@ function formatDate(iso: string) {
           <Plus :size="16" aria-hidden="true" />
           {{ t('periods.openNext') }}
         </Button>
+      </div>
+
+      <div v-if="catalog && catalog.length > 0" class="panel extra-questions-panel">
+        <h2>{{ t('periods.extraQuestions.title') }}</h2>
+        <p class="hint">{{ t('periods.extraQuestions.hint') }}</p>
+        <label v-for="q in catalog" :key="q.key" class="extra-question-row">
+          <Checkbox
+            :model-value="selectedExtraQuestions.includes(q.key)"
+            @update:model-value="(v: boolean | 'indeterminate') => toggleExtraQuestion(q.key, v === true)"
+          />
+          <span>{{ locale === 'th' ? q.label.th : q.label.en }}</span>
+        </label>
       </div>
 
       <p v-if="loading && !periods">{{ t('common.loading') }}</p>
@@ -131,6 +153,27 @@ function formatDate(iso: string) {
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+}
+
+.extra-questions-panel h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.extra-questions-panel .hint {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.extra-question-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
 }
 
 .status-cell {

@@ -7,7 +7,7 @@ export function list() {
   return api.get<SurveyPeriod[]>('/api/survey-periods')
 }
 
-export function create(payload: { month: number; year: number }) {
+export function create(payload: { month: number; year: number; enabledExtraQuestions: string[] }) {
   return api.post<SurveyPeriod>('/api/survey-periods', payload)
 }
 

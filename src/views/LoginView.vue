@@ -72,6 +72,11 @@ async function handleSubmit() {
           {{ submitting ? t('login.submitting') : t('login.submit') }}
         </Button>
       </form>
+
+      <div class="onboarding-links">
+        <RouterLink to="/signup">{{ t('login.newCompany') }}</RouterLink>
+        <RouterLink to="/join">{{ t('login.haveJoinCode') }}</RouterLink>
+      </div>
     </div>
   </AuthLayout>
 </template>
@@ -173,5 +178,15 @@ h1 {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.onboarding-links {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
 }
 </style>
