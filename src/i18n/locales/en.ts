@@ -133,6 +133,7 @@ export default {
     confidenceLow: 'Low',
     urgentIssues: 'Urgent issues',
     decisionItems: 'Top 3 decisions',
+    notGenerated: 'No AI insight has been generated for this period yet',
   },
   heatmap: {
     title: 'Department × Topic Heatmap',
