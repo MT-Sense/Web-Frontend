@@ -131,6 +131,7 @@ export default {
     confidenceLow: 'ต่ำ',
     urgentIssues: 'ประเด็นเร่งด่วน',
     decisionItems: '3 เรื่องที่ควรตัดสินใจ',
+    notGenerated: 'ยังไม่มี AI insight สำหรับรอบนี้',
   },
   heatmap: {
     title: 'Heatmap แผนก × หัวข้อ',
