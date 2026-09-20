@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Building2, Check, Copy } from '@lucide/vue'
@@ -19,13 +19,17 @@ const companySlug = ref('')
 const adminFullName = ref('')
 const adminEmail = ref('')
 const adminPassword = ref('')
+const adminPasswordConfirmation = ref('')
+const passwordMismatch = computed(
+  () => adminPasswordConfirmation.value !== '' && adminPassword.value !== adminPasswordConfirmation.value,
+)
 const submitting = ref(false)
 const errorMessage = ref('')
 const joinCode = ref('')
 const copied = ref(false)
 
 async function handleSubmit() {
-  if (submitting.value) return
+  if (submitting.value || adminPassword.value !== adminPasswordConfirmation.value) return
   errorMessage.value = ''
   submitting.value = true
   try {
@@ -51,8 +55,8 @@ async function copyCode() {
   setTimeout(() => (copied.value = false), 1500)
 }
 
-function goToDashboard() {
-  router.push(auth.homeRouteFor(auth.currentRole!))
+function goToDepartments() {
+  router.push('/departments')
 }
 </script>
 
@@ -90,10 +94,25 @@ function goToDashboard() {
             required
           />
         </div>
+        <div class="field">
+          <label for="signup-admin-password-confirmation">{{ t('signup.confirmPassword') }}</label>
+          <Input
+            id="signup-admin-password-confirmation"
+            v-model="adminPasswordConfirmation"
+            type="password"
+            autocomplete="new-password"
+            :aria-invalid="passwordMismatch"
+            aria-describedby="signup-password-mismatch"
+            required
+          />
+          <p v-if="passwordMismatch" id="signup-password-mismatch" class="field-error" role="alert">
+            {{ t('signup.passwordMismatch') }}
+          </p>
+        </div>
 
         <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
 
-        <Button type="submit" size="lg" class="w-full" :disabled="submitting">
+        <Button type="submit" size="lg" class="mt-2 w-full" :disabled="submitting || passwordMismatch">
           {{ submitting ? t('signup.submitting') : t('signup.submit') }}
         </Button>
       </form>
@@ -108,7 +127,6 @@ function goToDashboard() {
       <Building2 :size="28" class="reveal-icon" aria-hidden="true" />
       <h1>{{ t('signup.joinCodeRevealTitle') }}</h1>
       <p class="subtitle">{{ t('signup.joinCodeRevealBody') }}</p>
-
       <div class="code-box">
         <span class="code">{{ joinCode }}</span>
         <Button variant="secondary" size="sm" @click="copyCode">
@@ -117,8 +135,7 @@ function goToDashboard() {
           {{ copied ? t('signup.copied') : t('signup.copyCode') }}
         </Button>
       </div>
-
-      <Button size="lg" class="w-full" @click="goToDashboard">{{ t('signup.continue') }}</Button>
+      <Button size="lg" class="w-full" @click="goToDepartments">{{ t('signup.continue') }}</Button>
     </div>
   </AuthLayout>
 </template>
@@ -169,6 +186,13 @@ h1 {
   font-weight: 600;
 }
 
+.field-error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
 .switch-link {
   margin: var(--space-5) 0 0;
   text-align: center;
@@ -176,26 +200,7 @@ h1 {
   color: var(--color-muted-foreground);
 }
 
-.reveal-icon {
-  color: var(--color-accent-700);
-}
-
-.code-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  background: var(--color-accent-100);
-  box-shadow: inset 0 0 0 1px var(--color-accent-200);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin: var(--space-2) 0 var(--space-5);
-}
-
-.code {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--color-accent-700);
-}
+.reveal-icon { color: var(--color-accent-700); }
+.code-box { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); background: var(--color-accent-100); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-2) 0 var(--space-5); }
+.code { font-size: var(--font-size-xl); font-weight: 700; letter-spacing: 0.1em; color: var(--color-accent-700); }
 </style>

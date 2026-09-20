@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AuthLayout from '@/layouts/AuthLayout.vue'
@@ -20,16 +20,20 @@ const router = useRouter()
 const loading = ref(true)
 const loadError = ref(false)
 const requiresCompanyPassword = ref(false)
-const collectDepartment = ref(false)
 const collectTenure = ref(false)
-const departments = ref<JoinCodeOption[]>([])
+const companyName = ref('')
 
 const firstName = ref('')
 const lastName = ref('')
 const position = ref('')
 const email = ref('')
 const password = ref('')
+const passwordConfirmation = ref('')
+const passwordMismatch = computed(
+  () => passwordConfirmation.value !== '' && password.value !== passwordConfirmation.value,
+)
 const companyPassword = ref('')
+const departments = ref<JoinCodeOption[]>([])
 const departmentId = ref('')
 const tenureBucket = ref('')
 
@@ -51,9 +55,9 @@ onMounted(async () => {
       return
     }
     requiresCompanyPassword.value = res.requiresCompanyPassword
-    collectDepartment.value = res.collectDepartment
-    collectTenure.value = res.collectTenure
+    companyName.value = res.companyName ?? ''
     departments.value = res.departments ?? []
+    collectTenure.value = res.collectTenure
   } catch {
     loadError.value = true
   } finally {
@@ -62,7 +66,7 @@ onMounted(async () => {
 })
 
 async function handleSubmit() {
-  if (submitting.value) return
+  if (submitting.value || password.value !== passwordConfirmation.value) return
   errorMessage.value = ''
   submitting.value = true
   try {
@@ -74,7 +78,7 @@ async function handleSubmit() {
       position: position.value,
       email: email.value,
       password: password.value,
-      departmentId: collectDepartment.value ? departmentId.value : undefined,
+      departmentId: departmentId.value,
       tenureBucket: collectTenure.value ? tenureBucket.value : undefined,
     })
     auth.completeRegistration(res)
@@ -100,6 +104,7 @@ async function handleSubmit() {
       <p v-else-if="loadError" class="error-message" role="alert">{{ t('join.invalidCode') }}</p>
 
       <form v-else @submit.prevent="handleSubmit">
+        <p class="company-summary">{{ t('join.foundCompany') }}: <strong>{{ companyName }}</strong></p>
         <div class="field-row">
           <div class="field">
             <label for="register-first-name">{{ t('register.firstName') }}</label>
@@ -116,12 +121,20 @@ async function handleSubmit() {
           <Input id="register-position" v-model="position" required />
         </div>
 
-        <div v-if="collectDepartment" class="field">
-          <label>{{ t('register.department') }}</label>
+        <div v-if="departments.length" class="field">
+          <label for="register-department">{{ t('register.department') }}</label>
           <DropdownSelect
+            id="register-department"
             v-model="departmentId"
-            :options="departments.map((d) => ({ value: d.id, label: d.name }))"
+            :options="departments.map((department) => ({ value: department.id, label: department.name }))"
           />
+          <p v-if="!departmentId" class="hint">{{ t('register.selectDepartment') }}</p>
+        </div>
+        <p v-else class="hint">{{ t('register.noDepartments') }}</p>
+
+        <div v-if="requiresCompanyPassword" class="field">
+          <label for="register-company-password">{{ t('join.companyPasswordLabel') }}</label>
+          <Input id="register-company-password" v-model="companyPassword" type="password" required />
         </div>
 
         <div v-if="collectTenure" class="field">
@@ -140,15 +153,25 @@ async function handleSubmit() {
           <label for="register-password">{{ t('register.password') }}</label>
           <Input id="register-password" v-model="password" type="password" autocomplete="new-password" required />
         </div>
-
-        <div v-if="requiresCompanyPassword" class="field">
-          <label for="register-company-password">{{ t('join.companyPasswordLabel') }}</label>
-          <Input id="register-company-password" v-model="companyPassword" type="password" required />
+        <div class="field">
+          <label for="register-password-confirmation">{{ t('register.confirmPassword') }}</label>
+          <Input
+            id="register-password-confirmation"
+            v-model="passwordConfirmation"
+            type="password"
+            autocomplete="new-password"
+            :aria-invalid="passwordMismatch"
+            aria-describedby="register-password-mismatch"
+            required
+          />
+          <p v-if="passwordMismatch" id="register-password-mismatch" class="field-error" role="alert">
+            {{ t('register.passwordMismatch') }}
+          </p>
         </div>
 
         <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
 
-        <Button type="submit" size="lg" class="w-full" :disabled="submitting">
+        <Button type="submit" size="lg" class="w-full" :disabled="submitting || !departmentId || passwordMismatch">
           {{ submitting ? t('register.submitting') : t('register.submit') }}
         </Button>
       </form>
@@ -185,6 +208,8 @@ h1 {
   gap: var(--space-3);
 }
 
+.company-summary { margin: 0 0 var(--space-4); color: var(--color-success); font-weight: 600; }
+
 .hint {
   color: var(--color-muted-foreground);
   font-size: var(--font-size-sm);
@@ -198,6 +223,13 @@ h1 {
   color: var(--color-danger);
   font-size: var(--font-size-sm);
   font-weight: 600;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 }
 
 @media (max-width: 480px) {
