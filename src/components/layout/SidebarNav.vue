@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Menu } from '@lucide/vue'
+import { Menu, PanelLeftClose, PanelLeftOpen } from '@lucide/vue'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export interface NavItem {
@@ -20,6 +20,25 @@ const props = defineProps<{
 const { t } = useI18n()
 const route = useRoute()
 const drawerOpen = ref(false)
+const collapsed = ref(props.variant === 'icon-only')
+const storageKey = `mt-sense-sidebar-${props.variant}`
+
+onMounted(() => {
+  try {
+    const saved = window.localStorage.getItem(storageKey)
+    if (saved === 'true' || saved === 'false') collapsed.value = saved === 'true'
+  } catch {
+    // Browsers that block storage can still use the toggle for this visit.
+  }
+})
+
+watch(collapsed, (value) => {
+  try {
+    window.localStorage.setItem(storageKey, String(value))
+  } catch {
+    // Keep the current page usable when storage is unavailable.
+  }
+})
 
 watch(() => route.fullPath, () => (drawerOpen.value = false))
 </script>
@@ -49,17 +68,31 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
     </SheetContent>
   </Sheet>
 
-  <nav class="sidebar desktop-sidebar" :class="props.variant">
+  <nav class="sidebar desktop-sidebar" :class="collapsed ? 'icon-only' : 'full'">
+    <div class="sidebar-top">
+      <span v-if="!collapsed" class="sidebar-name">{{ t('app.name') }}</span>
+      <button
+        type="button"
+        class="collapse-button"
+        :aria-label="collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
+        :aria-pressed="collapsed"
+        :title="collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
+        @click="collapsed = !collapsed"
+      >
+        <PanelLeftOpen v-if="collapsed" :size="20" aria-hidden="true" />
+        <PanelLeftClose v-else :size="20" aria-hidden="true" />
+      </button>
+    </div>
     <router-link
       v-for="item in props.items"
       :key="item.to"
       :to="item.to"
       class="nav-item"
       active-class="active"
-      :title="props.variant === 'icon-only' ? item.label : undefined"
+      :title="collapsed ? item.label : undefined"
     >
       <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
-      <span v-if="props.variant === 'full'" class="label">{{ item.label }}</span>
+      <span v-if="!collapsed" class="label">{{ item.label }}</span>
       <span v-else class="visually-hidden">{{ item.label }}</span>
     </router-link>
   </nav>
@@ -73,7 +106,10 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
   padding: var(--space-4) var(--space-3);
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
-  height: 100%;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
 }
 
 .sidebar.full {
@@ -84,6 +120,37 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
   width: var(--sidebar-width-collapsed);
   align-items: center;
 }
+
+.sidebar-top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: var(--space-2);
+  background: var(--color-surface);
+}
+
+.icon-only .sidebar-top { justify-content: center; }
+.sidebar-name { padding-left: var(--space-2); font-size: var(--font-size-sm); font-weight: 700; }
+
+.collapse-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.collapse-button:hover { background: var(--color-bg); color: var(--color-text); }
 
 .drawer-nav {
   border-right: none;

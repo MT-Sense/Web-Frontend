@@ -4,6 +4,7 @@ export type Role = 'admin' | 'executive' | 'employee'
 
 export interface CurrentUser {
   id: string
+  email: string
   fullName: string
   role: Role
   department: string

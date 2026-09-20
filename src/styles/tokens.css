@@ -7,25 +7,25 @@
    as CSS custom properties for the existing scoped styles AND generates matching
    utilities (bg-hr, text-heat-3, shadow-md, rounded-md). */
 @theme {
-  --color-bg: #f6f5fb;
+  --color-bg: #f5f8ff;
   --color-surface: #ffffff;
-  --color-text: #1c1b24;
-  --color-text-muted: #75798c;
-  --color-text-subtle: #9397ab;
+  --color-text: #10213d;
+  --color-text-muted: #5f708a;
+  --color-text-subtle: #8c9ab0;
 
-  --color-accent-100: #fff3e4;
-  --color-accent-200: #ffe3bf;
-  --color-accent-300: #facb8d;
-  --color-accent-400: #e1ad66;
-  --color-accent-500: #c28d41;
-  --color-accent-600: #a06f24;
-  --color-accent-700: #7d5411;
-  --color-accent-800: #5a3b0a;
-  --color-accent-900: #3a270d;
+  --color-accent-100: #eff6ff;
+  --color-accent-200: #dbeafe;
+  --color-accent-300: #bfdbfe;
+  --color-accent-400: #93c5fd;
+  --color-accent-500: #60a5fa;
+  --color-accent-600: #2563eb;
+  --color-accent-700: #1d4ed8;
+  --color-accent-800: #1e40af;
+  --color-accent-900: #172554;
 
   /* role badge colors — the design import has no opinion on these, carried forward */
-  --color-hr: #3653e0;
-  --color-hr-bg: #eef0fd;
+  --color-hr: #1d4ed8;
+  --color-hr-bg: #eff6ff;
   --color-executive: #7a3be0;
   --color-executive-bg: #f2ecfd;
   --color-employee: #1b9e6f;
@@ -39,21 +39,21 @@
   --color-danger: #d64545;
   --color-warning: #c98a1c;
 
-  /* heatmap scale — the accent ramp, darker = worse score */
-  --color-heat-1: #3a270d;
-  --color-heat-2: #5a3b0a;
-  --color-heat-3: #7d5411;
-  --color-heat-4: #a06f24;
-  --color-heat-5: #e1ad66;
+  /* Heatmap scale — darker = worse score. */
+  --color-heat-1: #0b1f44;
+  --color-heat-2: #173a78;
+  --color-heat-3: #1e40af;
+  --color-heat-4: #2563eb;
+  --color-heat-5: #bfdbfe;
 
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 14px;
   --radius-xl: 20px;
 
-  --shadow-sm: 0 1px 2px rgba(30, 25, 50, 0.08);
-  --shadow-md: 0 4px 16px rgba(30, 25, 50, 0.1);
-  --shadow-lg: 0 16px 36px rgba(30, 25, 50, 0.16);
+  --shadow-sm: 0 1px 2px rgba(22, 49, 91, 0.08);
+  --shadow-md: 0 4px 16px rgba(22, 49, 91, 0.1);
+  --shadow-lg: 0 16px 36px rgba(22, 49, 91, 0.16);
 
   --font-sans:
     'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -66,10 +66,10 @@
   --color-neutral: #c98a1c;
   --color-neutral-bg: #fbf1e0;
 
-  --color-primary: #b68235;
-  --color-primary-hover: #a06f24;
-  --color-primary-bg: #fff3e4;
-  --color-border: color-mix(in srgb, #1c1b24 12%, transparent);
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-bg: #eff6ff;
+  --color-border: color-mix(in srgb, #10213d 12%, transparent);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -92,25 +92,25 @@
 
   /* shadcn semantic set */
   --radius: 0.5rem;
-  --background: #f6f5fb;
-  --foreground: #1c1b24;
+  --background: #f5f8ff;
+  --foreground: #10213d;
   --card: #ffffff;
-  --card-foreground: #1c1b24;
+  --card-foreground: #10213d;
   --popover: #ffffff;
-  --popover-foreground: #1c1b24;
-  --primary: #b68235;
-  --primary-foreground: #fff3e4;
-  --secondary: #f3f5fe;
-  --secondary-foreground: #1c1b24;
-  --muted: #f3f5fe;
-  --muted-foreground: #75798c;
-  --accent: #fff3e4;
-  --accent-foreground: #7d5411;
+  --popover-foreground: #10213d;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #edf4ff;
+  --secondary-foreground: #10213d;
+  --muted: #edf4ff;
+  --muted-foreground: #5f708a;
+  --accent: #eff6ff;
+  --accent-foreground: #1d4ed8;
   --destructive: #d64545;
   --destructive-foreground: #ffffff;
-  --border: color-mix(in srgb, #1c1b24 12%, transparent);
-  --input: color-mix(in srgb, #1c1b24 12%, transparent);
-  --ring: #b68235;
+  --border: color-mix(in srgb, #10213d 12%, transparent);
+  --input: color-mix(in srgb, #10213d 12%, transparent);
+  --ring: #2563eb;
 }
 
 @theme inline {

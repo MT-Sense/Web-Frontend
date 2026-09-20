@@ -12,6 +12,7 @@ function route(path: string, roles?: string[]): RouteLocationNormalized {
 function fakeUser(role: Role): CurrentUser {
   return {
     id: 'u-test',
+    email: 'test@example.com',
     fullName: 'Test User',
     role,
     department: 'Test Dept',
