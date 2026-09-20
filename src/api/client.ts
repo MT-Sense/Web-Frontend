@@ -64,7 +64,10 @@ async function parseErrorMessage(res: Response): Promise<string> {
 
 export async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
   const useAuth = options.auth !== false
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const blob = options.body instanceof Blob ? options.body : null
+  const headers: Record<string, string> = {
+    'Content-Type': blob?.type || (blob ? 'application/octet-stream' : 'application/json'),
+  }
   if (useAuth && accessToken) {
     headers.Authorization = `Bearer ${accessToken}`
   }
@@ -72,7 +75,7 @@ export async function request<T>(path: string, options: RequestOptions = {}, isR
   const res = await fetch(`${BASE_URL}${path}`, {
     method: options.method ?? 'GET',
     headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body === undefined ? undefined : blob ?? JSON.stringify(options.body),
   })
 
   if (res.status === 401 && useAuth && !isRetry) {
@@ -100,4 +103,5 @@ export const api = {
     request<T>(path, { ...options, method: 'POST', body }),
   patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>(path, { ...options, method: 'PATCH', body }),
+  delete: <T>(path: string, options?: RequestOptions) => request<T>(path, { ...options, method: 'DELETE' }),
 }

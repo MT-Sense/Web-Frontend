@@ -21,10 +21,9 @@ export interface JoinCodeOption {
 export interface JoinCodeCheckResult {
   valid: boolean
   companyName?: string
+  departments: JoinCodeOption[]
   requiresCompanyPassword: boolean
-  collectDepartment: boolean
   collectTenure: boolean
-  departments?: JoinCodeOption[]
 }
 
 export interface RegisterEmployeePayload {
@@ -35,7 +34,7 @@ export interface RegisterEmployeePayload {
   position: string
   email: string
   password: string
-  departmentId?: string
+  departmentId: string
   tenureBucket?: string
 }
 

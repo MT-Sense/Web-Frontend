@@ -55,7 +55,7 @@ function toggleLocale() {
   setLocale(locale.value === 'th' ? 'en' : 'th')
 }
 
-// --- admin-only: join code + org settings ---
+// --- admin-only: join code and org settings ---
 
 const { data: joinCodeData, reload: reloadJoinCode } = useAsyncData(() =>
   isAdmin.value ? orgsApi.getJoinCode() : Promise.resolve(null),
@@ -108,17 +108,6 @@ async function clearCompanyPassword() {
     await reloadOrgSettings()
   } finally {
     savingCompanyPassword.value = false
-  }
-}
-
-const savingCollectDepartment = ref(false)
-async function updateCollectDepartment(value: boolean) {
-  if (!orgSettings.value || savingCollectDepartment.value) return
-  savingCollectDepartment.value = true
-  try {
-    orgSettings.value = await orgsApi.updateOrgSettings({ collectDepartment: value })
-  } finally {
-    savingCollectDepartment.value = false
   }
 }
 
@@ -183,11 +172,12 @@ async function updateCollectTenure(value: boolean) {
             {{ t('settings.joinCode.regenerate') }}
           </Button>
         </div>
-        <p v-if="confirmingRegenerate" class="confirm-note">
-          {{ t('settings.joinCode.regenerateConfirm') }}
-        </p>
+        <p v-if="confirmingRegenerate" class="confirm-note">{{ t('settings.joinCode.regenerateConfirm') }}</p>
+      </section>
 
-        <div v-if="orgSettings" class="company-password">
+      <section v-if="isAdmin && orgSettings" class="panel">
+        <h2>{{ t('settings.joinCode.companyPasswordSectionTitle') }}</h2>
+        <div class="company-password">
           <label class="toggle-row">
             <Switch
               :model-value="orgSettings.companyPasswordSet"
@@ -219,14 +209,6 @@ async function updateCollectTenure(value: boolean) {
       <section v-if="isAdmin && orgSettings" class="panel">
         <h2>{{ t('settings.optionalFields.sectionTitle') }}</h2>
         <p class="hint">{{ t('settings.optionalFields.hint') }}</p>
-        <label class="toggle-row">
-          <Switch
-            :model-value="orgSettings.collectDepartment"
-            :disabled="savingCollectDepartment"
-            @update:model-value="updateCollectDepartment"
-          />
-          {{ t('settings.optionalFields.collectDepartment') }}
-        </label>
         <label class="toggle-row">
           <Switch
             :model-value="orgSettings.collectTenure"
@@ -353,31 +335,9 @@ dd.muted {
   gap: var(--space-2);
 }
 
-.join-code-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.join-code {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--color-accent-700);
-}
-
-.confirm-note {
-  margin: 0 0 var(--space-3);
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
-}
-
-.company-password {
-  margin-top: var(--space-2);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
-}
+.join-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+.join-code { font-size: var(--font-size-lg); font-weight: 700; letter-spacing: 0.1em; color: var(--color-accent-700); }
+.confirm-note { margin: 0; font-size: var(--font-size-xs); color: var(--color-danger); }
 
 .muted-inline {
   color: var(--color-text-subtle);

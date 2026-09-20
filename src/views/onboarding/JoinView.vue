@@ -37,7 +37,7 @@ async function handleCheckCode() {
       step.value = 'password'
       return
     }
-    router.push({ name: 'join-register', params: { code: code.value.toUpperCase() } })
+    router.push({ name: 'join-register', params: { code: code.value.trim().toUpperCase() } })
   } catch {
     errorMessage.value = t('join.invalidCode')
   } finally {
@@ -55,7 +55,7 @@ async function handleCheckPassword() {
       errorMessage.value = t('join.invalidPassword')
       return
     }
-    router.push({ name: 'join-register', params: { code: code.value.toUpperCase() } })
+    router.push({ name: 'join-register', params: { code: code.value.trim().toUpperCase() } })
   } catch {
     errorMessage.value = t('join.invalidPassword')
   } finally {

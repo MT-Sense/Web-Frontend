@@ -54,6 +54,22 @@ const router = createRouter({
       meta: { roles: ['admin'] as Role[] },
     },
     {
+      path: '/departments',
+      name: 'departments',
+      component: () => import('@/views/hr/DepartmentsView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+    },
+    {
+      path: '/model-training',
+      name: 'model-training',
+      component: () => import('@/views/hr/ModelTrainingView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+      beforeEnter: () => {
+        const auth = useAuthStore()
+        return auth.currentUser?.email?.trim().toLowerCase() === 'test@kmitl.ac.th' ? true : '/dashboard'
+      },
+    },
+    {
       path: '/executive',
       name: 'executive-dashboard',
       component: () => import('@/views/executive/ExecutiveDashboardView.vue'),

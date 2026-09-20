@@ -14,6 +14,7 @@ export interface DropdownOption {
 }
 
 const props = defineProps<{
+  id?: string
   modelValue: string
   options: DropdownOption[]
 }>()
@@ -28,7 +29,7 @@ const selected = computed({
 
 <template>
   <Select v-model="selected">
-    <SelectTrigger class="min-w-40 font-semibold">
+    <SelectTrigger :id="props.id" class="min-w-40 font-semibold">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>
