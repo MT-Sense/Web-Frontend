@@ -8,7 +8,7 @@ import EmptyOrSuppressed from '@/components/common/EmptyOrSuppressed.vue'
 const props = defineProps<{ topics: Topic[]; rows: HeatmapRow[] }>()
 const emit = defineEmits<{ cellClick: [topicId: string, department: HeatmapRow['department']] }>()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 /** Lower score = worse = darker step of the accent ramp. */
 function heatClass(score: number) {
@@ -29,7 +29,9 @@ function heatClass(score: number) {
       </div>
 
       <template v-for="row in props.rows" :key="row.department.id">
-        <div class="row-header">{{ row.department.name }}</div>
+        <div class="row-header">
+          {{ row.department.id === '__unassigned__' ? t('heatmap.unassigned') : row.department.name }}
+        </div>
 
         <template v-if="row.department.respondentCount < 5">
           <div class="suppressed-row" :style="{ gridColumn: `span ${props.topics.length}` }">
@@ -42,6 +44,7 @@ function heatClass(score: number) {
             :key="cell.topicId"
             type="button"
             class="cell"
+            :disabled="cell.score.suppressed"
             :class="!cell.score.suppressed ? heatClass(cell.score.data) : ''"
             @click="emit('cellClick', cell.topicId, row.department)"
           >
@@ -104,6 +107,16 @@ function heatClass(score: number) {
 .cell:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+.cell:disabled {
+  cursor: default;
+  background: var(--color-bg);
+}
+
+.cell:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .cell:active {

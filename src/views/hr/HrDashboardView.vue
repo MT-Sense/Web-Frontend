@@ -13,6 +13,8 @@ import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import TrendLineChart from '@/components/charts/TrendLineChart.vue'
 import HeatmapGrid from '@/components/charts/HeatmapGrid.vue'
 import WordCloud from '@/components/charts/WordCloud.vue'
+import DepartmentSummaryTable from '@/components/charts/DepartmentSummaryTable.vue'
+import DashboardAlerts from '@/components/dashboard/DashboardAlerts.vue'
 import AiInsightPanel from '@/components/dashboard/AiInsightPanel.vue'
 import UrgentIssuesList from '@/components/dashboard/UrgentIssuesList.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
@@ -56,14 +58,16 @@ async function loadInsight(period?: string) {
 
 async function loadDashboard() {
   const period = selectedPeriod.value || undefined
-  const [kpis, heatmap, wordCloud, insight, extraQuestions] = await Promise.all([
+  const [kpis, heatmap, departmentSummary, wordCloud, insight, alerts, extraQuestions] = await Promise.all([
     dashboardApi.hrKpis(period),
     dashboardApi.heatmap(period),
-    dashboardApi.wordCloud(period),
+    dashboardApi.departmentSummary(period).catch(() => null),
+    dashboardApi.wordCloud(period).catch(() => null),
     loadInsight(period),
+    dashboardApi.alerts(period).catch(() => null),
     dashboardApi.extraQuestions(period),
   ])
-  return { kpis, heatmap, wordCloud, insight, extraQuestions }
+  return { kpis, heatmap, departmentSummary, wordCloud, insight, alerts, extraQuestions }
 }
 
 const { data, loading, error, reload } = useAsyncData(loadDashboard)
@@ -74,22 +78,42 @@ watch(selectedPeriod, () => {
 
 const departmentOptions = computed(() => [
   { value: 'all', label: t('common.all') },
-  ...(data.value?.heatmap.rows.map((r) => ({ value: r.department.id, label: r.department.name })) ?? []),
+  ...(data.value?.heatmap.rows.map((r) => ({
+    value: r.department.id,
+    label: r.department.id === '__unassigned__' ? t('heatmap.unassigned') : r.department.name,
+  })) ?? []),
 ])
 
 const isFiltered = computed(() => selectedDepartment.value !== 'all')
+const heatmapRows = computed(() =>
+  selectedDepartment.value === 'all'
+    ? (data.value?.heatmap.rows ?? [])
+    : (data.value?.heatmap.rows.filter((row) => row.department.id === selectedDepartment.value) ?? []),
+)
+const departmentSummaryRows = computed(() => {
+  const rows = data.value?.departmentSummary?.rows ?? []
+  return selectedDepartment.value === 'all'
+    ? rows
+    : rows.filter((row) => row.departmentId === selectedDepartment.value)
+})
+
+watch(() => data.value?.heatmap.rows, (rows) => {
+  if (rows && selectedDepartment.value !== 'all' && !rows.some((row) => row.department.id === selectedDepartment.value)) {
+    selectedDepartment.value = 'all'
+  }
+})
 
 const trendPoints = computed(() =>
   (data.value?.kpis.trend ?? []).map((p) => ({ label: p.month.slice(5), a: p.enps, b: p.satisfaction })),
 )
 
-function goToTopic(topicId: string) {
-  router.push(`/dashboard/topics/${topicId}`)
+function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['department']) {
+  router.push({
+    path: `/dashboard/topics/${topicId}`,
+    query: { department: department.id, period: selectedPeriod.value || undefined },
+  })
 }
 
-function filterFeedByTag(topicId: string) {
-  router.push({ path: '/voices', query: { tag: topicId } })
-}
 </script>
 
 <template>
@@ -113,7 +137,7 @@ function filterFeedByTag(topicId: string) {
 
     <PrivacyBanner v-if="isFiltered" variant="filters-active" />
 
-    <p v-if="loading && !data">{{ t('common.loading') }}</p>
+    <p v-if="loading">{{ t('common.loading') }}</p>
     <Alert v-else-if="error" variant="destructive">
       <AlertDescription>
         {{ t('common.loadError') }}
@@ -144,10 +168,6 @@ function filterFeedByTag(topicId: string) {
           :value="`${data.kpis.responseRate.percentage}%`"
           :sublabel="`${data.kpis.responseRate.responded}/${data.kpis.responseRate.total}`"
         />
-        <div class="kpi-card sentiment-card panel">
-          <div class="label">{{ t('kpi.sentimentDistribution') }}</div>
-          <SentimentBar :sentiment="data.kpis.sentiment" />
-        </div>
       </div>
 
       <section class="panel">
@@ -164,14 +184,33 @@ function filterFeedByTag(topicId: string) {
       </Alert>
 
       <section class="panel">
-        <h2>{{ t('heatmap.title') }}</h2>
-        <HeatmapGrid :topics="data.heatmap.topics" :rows="data.heatmap.rows" @cell-click="goToTopic" />
+        <DashboardAlerts :alerts="data.alerts" :departments="data.heatmap.rows.map((row) => row.department)" />
       </section>
 
       <section class="panel">
-        <h2>{{ t('wordcloud.title') }}</h2>
-        <WordCloud :terms="data.wordCloud" @term-click="filterFeedByTag" />
+        <h2>{{ t('heatmap.title') }}</h2>
+        <p class="heatmap-scope">{{ t('heatmap.filterScope') }}</p>
+        <HeatmapGrid :topics="data.heatmap.topics" :rows="heatmapRows" @cell-click="goToTopic" />
       </section>
+
+      <div class="dashboard-lower-grid">
+        <section class="panel department-summary-panel">
+          <h2>{{ t('departmentScores.title') }}</h2>
+          <DepartmentSummaryTable v-if="data.departmentSummary" :rows="departmentSummaryRows" />
+          <p v-else class="wordcloud-error">{{ t('common.loadError') }}</p>
+          <p class="summary-note">{{ t('departmentScores.headcountNote') }}</p>
+          <p class="summary-note">{{ t('departmentScores.methodNote') }}</p>
+        </section>
+
+        <section class="panel wordcloud-panel">
+          <h2>{{ t('kpi.sentimentDistribution') }}</h2>
+          <SentimentBar :sentiment="data.kpis.sentiment" />
+          <hr class="rule" />
+          <h2>{{ t('wordcloud.title') }}</h2>
+          <WordCloud v-if="data.wordCloud" :terms="data.wordCloud" compact />
+          <p v-else class="wordcloud-error">{{ t('wordcloud.loadError') }}</p>
+        </section>
+      </div>
 
       <section v-if="data.extraQuestions.length > 0" class="panel">
         <h2>{{ t('periods.extraQuestions.resultsTitle') }}</h2>
@@ -206,7 +245,7 @@ function filterFeedByTag(topicId: string) {
 
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-3);
 }
 
@@ -217,18 +256,35 @@ function filterFeedByTag(topicId: string) {
   gap: var(--space-2);
 }
 
-.sentiment-card .label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
 .panel h2 {
   margin: 0 0 var(--space-4);
   font-size: var(--font-size-md);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+
+.heatmap-scope {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.wordcloud-error {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.dashboard-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(220px, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.department-summary-panel { min-width: 0; }
+.wordcloud-panel { min-width: 0; }
+.wordcloud-panel .rule { margin: var(--space-5) 0; }
+.summary-note { margin: var(--space-3) 0 0; color: var(--color-text-muted); font-size: var(--font-size-xs); }
 
 .two-col {
   display: grid;
@@ -278,6 +334,8 @@ function filterFeedByTag(topicId: string) {
   .kpi-row {
     grid-template-columns: repeat(3, 1fr);
   }
+  .dashboard-lower-grid { grid-template-columns: 1fr; }
+  .wordcloud-panel { max-width: 460px; }
 }
 
 @media (max-width: 900px) {

@@ -20,6 +20,19 @@ export interface Heatmap {
   topics: Topic[]
   rows: HeatmapRow[]
 }
+export interface DepartmentSummaryRow {
+  departmentId: string
+  name: string
+  responded: Suppressible<number>
+  total: number | null
+  score: Suppressible<number>
+  change: number | null
+  forecast: number | null
+  status: 'good' | 'watch' | 'risk' | 'unavailable'
+}
+export interface DepartmentSummary {
+  rows: DepartmentSummaryRow[]
+}
 export interface InsightResponse {
   insight: AiInsight
   urgentIssues: UrgentIssue[]
@@ -49,6 +62,10 @@ export function heatmap(period?: string) {
   return api.get<Heatmap>(`/api/dashboard/hr/heatmap${periodQuery(period)}`)
 }
 
+export function departmentSummary(period?: string) {
+  return api.get<DepartmentSummary>(`/api/dashboard/hr/departments${periodQuery(period)}`)
+}
+
 export function wordCloud(period?: string) {
   return api.get<WordCloudTerm[]>(`/api/dashboard/hr/wordcloud${periodQuery(period)}`)
 }
@@ -65,8 +82,12 @@ export function extraQuestions(period?: string) {
   return api.get<ExtraQuestionResult[]>(`/api/dashboard/hr/extra-questions${periodQuery(period)}`)
 }
 
-export function topicDrilldown(topicId: string, period?: string) {
-  return api.get<TopicDrilldown>(`/api/dashboard/hr/topics/${topicId}${periodQuery(period)}`)
+export function topicDrilldown(topicId: string, period?: string, department?: string) {
+  const query = new URLSearchParams()
+  if (period) query.set('period', period)
+  if (department) query.set('department', department)
+  const suffix = query.size ? `?${query.toString()}` : ''
+  return api.get<TopicDrilldown>(`/api/dashboard/hr/topics/${encodeURIComponent(topicId)}${suffix}`)
 }
 
 export function executiveSummary(period?: string) {

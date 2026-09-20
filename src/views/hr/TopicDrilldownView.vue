@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { Download, Plus } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -12,10 +13,28 @@ import ProgressBarLabeled from '@/components/charts/ProgressBarLabeled.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as dashboardApi from '@/api/dashboard'
 import * as feedApi from '@/api/feed'
+import { ApiError } from '@/api/client'
 import type { Locale } from '@/types/common'
 
 const props = defineProps<{ id: string }>()
 const { t, locale } = useI18n()
+const route = useRoute()
+const selectedDepartment = computed(() => typeof route.query.department === 'string' ? route.query.department : undefined)
+const selectedPeriod = computed(() => typeof route.query.period === 'string' ? route.query.period : undefined)
+const hiddenForPrivacy = ref(false)
+
+async function loadDrilldown() {
+  hiddenForPrivacy.value = false
+  try {
+    return await dashboardApi.topicDrilldown(props.id, selectedPeriod.value, selectedDepartment.value)
+  } catch (err) {
+    if (selectedDepartment.value && err instanceof ApiError && err.status === 404) {
+      hiddenForPrivacy.value = true
+      return null
+    }
+    throw err
+  }
+}
 
 const { data: topicList } = useAsyncData(() => dashboardApi.topics())
 const {
@@ -23,12 +42,19 @@ const {
   loading,
   error,
   reload,
-} = useAsyncData(() => dashboardApi.topicDrilldown(props.id))
-watch(() => props.id, reload)
+} = useAsyncData(loadDrilldown)
+watch(() => [props.id, selectedPeriod.value, selectedDepartment.value], reload)
 
 const { data: actionItems, reload: reloadActionItems } = useAsyncData(() => feedApi.actionItems())
 
 const topic = computed(() => topicList.value?.find((t2) => t2.id === props.id))
+const departmentName = computed(() => drilldown.value?.departmentId === '__unassigned__'
+  ? t('heatmap.unassigned')
+  : drilldown.value?.departmentName)
+const breadcrumb = computed(() => {
+  const topicName = topic.value?.label[locale.value as Locale] ?? ''
+  return departmentName.value ? `${topicName} · ${departmentName.value}` : topicName
+})
 
 const trendPoints = computed(
   () => drilldown.value?.trend.map((p) => ({ label: p.month.slice(5), value: p.score })) ?? [],
@@ -63,8 +89,11 @@ async function submitAction() {
 </script>
 
 <template>
-  <HrLayout :breadcrumb="topic ? topic.label[locale as Locale] : ''">
-    <p v-if="loading && !drilldown">{{ t('common.loading') }}</p>
+  <HrLayout :breadcrumb="breadcrumb">
+    <p v-if="loading">{{ t('common.loading') }}</p>
+    <Alert v-else-if="hiddenForPrivacy">
+      <AlertDescription>{{ t('privacy.suppressed') }}</AlertDescription>
+    </Alert>
     <Alert v-else-if="error" variant="destructive">
       <AlertDescription>
         {{ t('common.loadError') }}
@@ -73,6 +102,9 @@ async function submitAction() {
     </Alert>
 
     <div v-else-if="drilldown" class="drilldown">
+      <p v-if="drilldown.departmentId" class="scope-label">
+        {{ t('drilldown.departmentScope', { name: departmentName }) }}
+      </p>
       <section class="panel score-panel">
         <div class="score-block">
           <span class="score-value">{{ drilldown.score.toFixed(1) }}/5</span>
@@ -107,8 +139,8 @@ async function submitAction() {
 
       <div class="two-col">
         <section class="panel">
-          <h2>{{ t('drilldown.subIssues') }}</h2>
-          <div class="sub-issues">
+          <h2 v-if="drilldown.subIssues.length">{{ t('drilldown.subIssues') }}</h2>
+          <div v-if="drilldown.subIssues.length" class="sub-issues">
             <ProgressBarLabeled
               v-for="issue in drilldown.subIssues"
               :key="issue.id"
@@ -116,6 +148,7 @@ async function submitAction() {
               :percentage="issue.percentage"
             />
           </div>
+          <h2 v-else>{{ t('kpi.sentimentDistribution') }}</h2>
           <SentimentBar :sentiment="drilldown.sentiment" />
         </section>
 
@@ -124,10 +157,11 @@ async function submitAction() {
           <ul class="quotes">
             <li v-for="(quote, i) in drilldown.sampleQuotes" :key="i">"{{ quote }}"</li>
           </ul>
+          <p v-if="!drilldown.sampleQuotes.length">{{ t('drilldown.noQuotes') }}</p>
         </section>
       </div>
 
-      <section class="panel">
+      <section v-if="!drilldown.departmentId" class="panel">
         <div class="panel-header">
           <h2>Action Items</h2>
           <Button size="sm" @click="showAddAction = true">
@@ -156,6 +190,13 @@ async function submitAction() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.scope-label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
 }
 
 .panel-header {

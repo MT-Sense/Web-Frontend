@@ -20,6 +20,8 @@ export interface TopicSubIssue {
 
 export interface TopicDrilldown {
   topicId: string
+  departmentId?: string
+  departmentName?: string
   score: number
   companyAverage: number
   respondentCount: number
