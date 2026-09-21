@@ -37,9 +37,11 @@ async function ensureRefreshed(): Promise<boolean> {
 
 export class ApiError extends Error {
   status: number
-  constructor(status: number, message: string) {
+  details: string[]
+  constructor(status: number, message: string, details: string[] = []) {
     super(message)
     this.status = status
+    this.details = details
     this.name = 'ApiError'
   }
 }
@@ -51,15 +53,18 @@ interface RequestOptions {
   auth?: boolean
 }
 
-async function parseErrorMessage(res: Response): Promise<string> {
+async function parseErrorMessage(res: Response): Promise<{ message: string; details: string[] }> {
   try {
     const data = await res.clone().json()
-    if (typeof data.error === 'string') return data.error
-    if (Array.isArray(data.errors)) return data.errors.join(', ')
+    if (typeof data.error === 'string') return { message: data.error, details: [] }
+    if (Array.isArray(data.errors)) {
+      const details = data.errors.filter((item: unknown): item is string => typeof item === 'string')
+      return { message: details[0] ?? res.statusText, details }
+    }
   } catch {
     // body wasn't JSON — fall through to statusText
   }
-  return res.statusText || `request failed with status ${res.status}`
+  return { message: res.statusText || `request failed with status ${res.status}`, details: [] }
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
@@ -88,7 +93,8 @@ export async function request<T>(path: string, options: RequestOptions = {}, isR
   }
 
   if (!res.ok) {
-    throw new ApiError(res.status, await parseErrorMessage(res))
+    const parsed = await parseErrorMessage(res)
+    throw new ApiError(res.status, parsed.message, parsed.details)
   }
 
   if (res.status === 204) {

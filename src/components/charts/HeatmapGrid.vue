@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { Lock } from '@lucide/vue'
 import type { Locale } from '@/types/common'
 import type { Topic } from '@/types/topic'
 import type { HeatmapRow } from '@/api/dashboard'
 import EmptyOrSuppressed from '@/components/common/EmptyOrSuppressed.vue'
 
-const props = defineProps<{ topics: Topic[]; rows: HeatmapRow[] }>()
+const props = withDefaults(defineProps<{ topics: Topic[]; rows: HeatmapRow[]; compact?: boolean }>(), {
+  compact: false,
+})
 const emit = defineEmits<{ cellClick: [topicId: string, department: HeatmapRow['department']] }>()
 
 const { locale, t } = useI18n()
@@ -21,15 +24,15 @@ function heatClass(score: number) {
 </script>
 
 <template>
-  <div class="heatmap">
-    <div class="grid" :style="{ gridTemplateColumns: `160px repeat(${props.topics.length}, 1fr)` }">
+  <div class="heatmap" :class="{ compact: props.compact }">
+    <div class="grid" :style="{ gridTemplateColumns: `${props.compact ? '128px' : '160px'} repeat(${props.topics.length}, 1fr)` }">
       <div class="corner" />
-      <div v-for="topic in props.topics" :key="topic.id" class="col-header">
+      <div v-for="topic in props.topics" :key="topic.id" class="col-header" :title="topic.label[locale as Locale]">
         {{ topic.label[locale as Locale] }}
       </div>
 
       <template v-for="row in props.rows" :key="row.department.id">
-        <div class="row-header">
+        <div class="row-header" :title="row.department.name">
           {{ row.department.id === '__unassigned__' ? t('heatmap.unassigned') : row.department.name }}
         </div>
 
@@ -46,9 +49,12 @@ function heatClass(score: number) {
             class="cell"
             :disabled="cell.score.suppressed"
             :class="!cell.score.suppressed ? heatClass(cell.score.data) : ''"
+            :aria-label="cell.score.suppressed ? t('privacy.suppressed') : undefined"
+            :title="cell.score.suppressed ? t('privacy.suppressed') : undefined"
             @click="emit('cellClick', cell.topicId, row.department)"
           >
             <span v-if="!cell.score.suppressed">{{ cell.score.data.toFixed(1) }}</span>
+            <Lock v-else-if="props.compact" :size="14" aria-hidden="true" />
             <EmptyOrSuppressed v-else />
           </button>
         </template>
@@ -153,4 +159,10 @@ function heatClass(score: number) {
   align-items: center;
   justify-content: center;
 }
+
+.compact .grid { min-width: 480px; }
+.compact .col-header { padding: var(--space-1); line-height: 1.2; overflow-wrap: anywhere; }
+.compact .row-header { padding: var(--space-1); font-size: var(--font-size-xs); line-height: 1.25; }
+.compact .cell,
+.compact .suppressed-row { height: 38px; }
 </style>

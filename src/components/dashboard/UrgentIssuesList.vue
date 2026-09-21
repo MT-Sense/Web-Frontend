@@ -10,7 +10,7 @@ const { locale, t } = useI18n()
 <template>
   <section class="urgent-issues panel">
     <h2>{{ t('insight.urgentIssues') }}</h2>
-    <ul>
+    <ul v-if="issues.length">
       <li v-for="issue in issues" :key="issue.id">
         <span class="mark">!</span>
         <span class="label">{{ issue.label[locale as Locale] }}</span>
@@ -18,6 +18,7 @@ const { locale, t } = useI18n()
         <span class="dept">{{ issue.departmentName[locale as Locale] }}</span>
       </li>
     </ul>
+    <p v-else class="empty">{{ t('insight.noUrgentIssues') }}</p>
   </section>
 </template>
 
@@ -58,5 +59,11 @@ li {
 .dash,
 .dept {
   color: var(--color-text-muted);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 </style>

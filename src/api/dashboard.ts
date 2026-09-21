@@ -33,6 +33,13 @@ export interface DepartmentSummaryRow {
 export interface DepartmentSummary {
   rows: DepartmentSummaryRow[]
 }
+export interface DepartmentTrendPoint {
+  month: string
+  enps: number | null
+  satisfaction: number | null
+  responseRate: number | null
+  burnoutRisk: number | null
+}
 export interface InsightResponse {
   insight: AiInsight
   urgentIssues: UrgentIssue[]
@@ -56,6 +63,12 @@ export function positions() {
 
 export function hrKpis(period?: string) {
   return api.get<HrKpis>(`/api/dashboard/hr/kpi${periodQuery(period)}`)
+}
+
+export function departmentTrend(department: string, period?: string) {
+  const query = new URLSearchParams({ department })
+  if (period) query.set('period', period)
+  return api.get<DepartmentTrendPoint[]>(`/api/dashboard/hr/trend?${query.toString()}`)
 }
 
 export function heatmap(period?: string) {

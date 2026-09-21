@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Lock } from '@lucide/vue'
+import { Plus, Lock, Upload } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import PrivacySettingsPanel from '@/components/forms/PrivacySettingsPanel.vue'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as periodsApi from '@/api/periods'
 import * as surveyApi from '@/api/survey'
+import { ApiError } from '@/api/client'
 
 const { t, locale } = useI18n()
 
@@ -21,6 +22,69 @@ const { data: catalog } = useAsyncData(() => surveyApi.catalog())
 const creating = ref(false)
 const closingId = ref<string | null>(null)
 const selectedExtraQuestions = ref<string[]>([])
+const fileInput = ref<HTMLInputElement | null>(null)
+const importPeriodId = ref('')
+const importFile = ref<File | null>(null)
+const importPreview = ref<periodsApi.ImportPreview | null>(null)
+const importError = ref('')
+const importDetails = ref<string[]>([])
+const importSuccess = ref('')
+const previewing = ref(false)
+const importing = ref(false)
+
+function chooseImport(periodId: string) {
+  importPeriodId.value = periodId
+  importFile.value = null
+  importPreview.value = null
+  importError.value = ''
+  importDetails.value = []
+  importSuccess.value = ''
+  fileInput.value?.click()
+}
+
+async function onImportFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+  input.value = ''
+  if (!file) return
+  importFile.value = file
+  importPreview.value = null
+  importSuccess.value = ''
+  importError.value = ''
+  importDetails.value = []
+  if (!file.name.toLowerCase().endsWith('.xlsx') || file.size > 5 * 1024 * 1024) {
+    importError.value = t('periods.import.invalidFile')
+    return
+  }
+  previewing.value = true
+  try {
+    importPreview.value = await periodsApi.previewImport(importPeriodId.value, file)
+  } catch (err) {
+    importError.value = err instanceof Error ? err.message : t('periods.import.failed')
+    importDetails.value = err instanceof ApiError ? err.details : []
+  } finally {
+    previewing.value = false
+  }
+}
+
+async function confirmImport() {
+  if (!importFile.value || !importPreview.value || importing.value) return
+  importing.value = true
+  importError.value = ''
+  importDetails.value = []
+  try {
+    const result = await periodsApi.importWorkbook(importPeriodId.value, importFile.value)
+    importSuccess.value = t('periods.import.success', { count: result.imported })
+    importPreview.value = null
+    importFile.value = null
+    await reload()
+  } catch (err) {
+    importError.value = err instanceof Error ? err.message : t('periods.import.failed')
+    importDetails.value = err instanceof ApiError ? err.details : []
+  } finally {
+    importing.value = false
+  }
+}
 
 function toggleExtraQuestion(key: string, checked: boolean) {
   selectedExtraQuestions.value = checked
@@ -59,6 +123,11 @@ async function closePeriod(id: string) {
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString()
 }
+
+function importPeriodLabel() {
+  const period = periods.value?.find((item) => item.id === importPeriodId.value)
+  return period ? `${period.year}-${String(period.month).padStart(2, '0')}` : ''
+}
 </script>
 
 <template>
@@ -95,6 +164,14 @@ function formatDate(iso: string) {
       </Alert>
 
       <div v-else class="panel">
+        <input
+          ref="fileInput"
+          class="visually-hidden"
+          type="file"
+          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          :aria-label="t('periods.import.chooseFile')"
+          @change="onImportFileSelected"
+        />
         <Table>
           <TableHeader>
             <TableRow>
@@ -125,10 +202,42 @@ function formatDate(iso: string) {
                   <Lock :size="14" aria-hidden="true" />
                   {{ t('periods.close') }}
                 </Button>
+                <Button variant="secondary" size="sm" :disabled="previewing || importing" @click="chooseImport(p.id)">
+                  <Upload :size="14" aria-hidden="true" />
+                  {{ t('periods.import.chooseFile') }}
+                </Button>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+        <div v-if="previewing || importFile || importSuccess" class="import-panel">
+          <h2>{{ t('periods.import.title') }}</h2>
+          <p class="hint">{{ t('periods.import.format') }}</p>
+          <p class="hint">{{ t('periods.import.anonymousNote') }}</p>
+          <p v-if="importFile">{{ importFile.name }} · {{ importPeriodLabel() }}</p>
+          <p v-if="previewing">{{ t('periods.import.checking') }}</p>
+          <Alert v-if="importError" variant="destructive">
+            <AlertDescription>
+              <ul v-if="importDetails.length > 1" class="import-errors">
+                <li v-for="(detail, index) in importDetails" :key="`${index}-${detail}`">{{ detail }}</li>
+              </ul>
+              <span v-else>{{ importError }}</span>
+            </AlertDescription>
+          </Alert>
+          <Alert v-if="importSuccess"><AlertDescription>{{ importSuccess }}</AlertDescription></Alert>
+          <template v-if="importPreview">
+            <p>{{ t('periods.import.ready', { count: importPreview.rowCount }) }}</p>
+            <ul>
+              <li v-for="department in importPreview.departments" :key="department.name">
+                {{ department.name }}: {{ department.count }}
+              </li>
+            </ul>
+            <p v-if="importPreview.alreadyImported" class="import-warning">{{ t('periods.import.alreadyImported') }}</p>
+            <Button :disabled="importing || importPreview.alreadyImported" @click="confirmImport">
+              {{ importing ? t('periods.import.importing') : t('periods.import.confirm') }}
+            </Button>
+          </template>
+        </div>
       </div>
     </div>
   </HrLayout>
@@ -181,6 +290,13 @@ function formatDate(iso: string) {
   align-items: center;
   gap: var(--space-2);
 }
+
+.import-panel { border-top: 1px solid var(--color-border); margin-top: var(--space-5); padding-top: var(--space-5); }
+.import-panel h2 { margin: 0 0 var(--space-2); font-size: var(--font-size-md); font-weight: 600; }
+.import-panel .hint { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.import-panel ul { margin: var(--space-2) 0 var(--space-4); padding-left: var(--space-5); }
+.import-warning { color: var(--color-warning); font-weight: 600; }
+.import-errors { margin: 0; padding-left: var(--space-5); }
 
 @media (max-width: 640px) {
   .toolbar {

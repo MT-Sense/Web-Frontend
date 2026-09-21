@@ -63,5 +63,13 @@ function departmentName(id?: string) {
 .severity { flex: 0 0 auto; font-size: var(--font-size-xs); font-weight: 700; }
 .critical .severity { color: var(--color-danger); }
 .warning .severity { color: var(--color-warning); }
+
+.panel h2 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 @media (max-width: 560px) { .alert-item { flex-wrap: wrap; } .severity { margin-left: 30px; } }
 </style>

@@ -14,3 +14,23 @@ export function create(payload: { month: number; year: number; enabledExtraQuest
 export function close(id: string) {
   return api.post<SurveyPeriod>(`/api/survey-periods/${id}/close`)
 }
+
+export interface ImportPreview {
+  rowCount: number
+  departments: { name: string; count: number }[]
+  alreadyImported: boolean
+}
+
+function workbookBody(file: File) {
+  return new Blob([file], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+}
+
+export function previewImport(periodId: string, file: File) {
+  return api.post<ImportPreview>(`/api/survey-periods/${encodeURIComponent(periodId)}/import/preview`, workbookBody(file))
+}
+
+export function importWorkbook(periodId: string, file: File) {
+  return api.post<{ imported: number }>(`/api/survey-periods/${encodeURIComponent(periodId)}/import`, workbookBody(file))
+}

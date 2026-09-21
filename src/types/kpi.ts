@@ -5,6 +5,9 @@ export interface TrendPoint {
   month: string
   enps: number
   satisfaction: number
+  responseRate: number
+  burnoutRisk: number
+  hasResponses: boolean
 }
 
 export interface HrKpis {
