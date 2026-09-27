@@ -16,6 +16,7 @@ import WordCloud from '@/components/charts/WordCloud.vue'
 import DepartmentSummaryTable from '@/components/charts/DepartmentSummaryTable.vue'
 import DashboardAlerts from '@/components/dashboard/DashboardAlerts.vue'
 import AiInsightPanel from '@/components/dashboard/AiInsightPanel.vue'
+import KnowledgeQAPanel from '@/components/dashboard/KnowledgeQAPanel.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as dashboardApi from '@/api/dashboard'
 import * as periodsApi from '@/api/periods'
@@ -288,6 +289,8 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
           </li>
         </ul>
       </section>
+
+      <KnowledgeQAPanel />
 
       <div class="insight-sentiment-grid">
         <AiInsightPanel v-if="data.insight" :insight="data.insight.insight" />

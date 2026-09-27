@@ -10,6 +10,7 @@ import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import RadarChart from '@/components/charts/RadarChart.vue'
 import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import DecisionItemsList from '@/components/dashboard/DecisionItemsList.vue'
+import KnowledgeQAPanel from '@/components/dashboard/KnowledgeQAPanel.vue'
 import { visible } from '@/types/common'
 import type { Locale } from '@/types/common'
 import { useAsyncData } from '@/composables/useAsyncData'
@@ -76,6 +77,8 @@ const positionBarData = computed(() =>
     </Alert>
 
     <template v-else-if="executiveHealth">
+      <KnowledgeQAPanel />
+
       <section class="panel health-card">
         <h2>{{ t('executive.orgHealth') }}</h2>
         <div class="health-body">
