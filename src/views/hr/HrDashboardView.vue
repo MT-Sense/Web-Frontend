@@ -6,7 +6,6 @@ import { Download, Mail } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import KpiCard from '@/components/kpi/KpiCard.vue'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
@@ -18,12 +17,14 @@ import DashboardAlerts from '@/components/dashboard/DashboardAlerts.vue'
 import AiInsightPanel from '@/components/dashboard/AiInsightPanel.vue'
 import KnowledgeQAPanel from '@/components/dashboard/KnowledgeQAPanel.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useToast } from '@/composables/useToast'
 import * as dashboardApi from '@/api/dashboard'
 import * as periodsApi from '@/api/periods'
 import { ApiError } from '@/api/client'
 
 const { t, locale } = useI18n()
 const router = useRouter()
+const { toast } = useToast()
 
 const selectedPeriod = ref('')
 const selectedDepartment = ref('all')
@@ -76,6 +77,12 @@ const { data, loading, error, reload } = useAsyncData(loadDashboard)
 
 watch([selectedPeriod, selectedDepartment], () => {
   if (selectedPeriod.value) reload()
+})
+
+watch(selectedDepartment, (department, previousDepartment) => {
+  if (department !== 'all' && department !== previousDepartment) {
+    toast.info(t('privacy.filtersActive'))
+  }
 })
 
 const departmentOptions = computed(() => [
@@ -190,8 +197,6 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         </Button>
       </div>
     </div>
-
-    <PrivacyBanner v-if="isFiltered" variant="filters-active" />
 
     <p v-if="loading">{{ t('common.loading') }}</p>
     <Alert v-else-if="error" variant="destructive">

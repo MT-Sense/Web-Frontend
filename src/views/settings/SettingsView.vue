@@ -19,7 +19,9 @@ const { layoutComponent } = useRoleLayout()
 const auth = useAuthStore()
 const router = useRouter()
 
-const isAdmin = computed(() => auth.currentRole === 'admin')
+const isAdmin = computed(() => (
+  auth.currentRole === 'admin'
+))
 
 async function handleLogoutAllDevices() {
   await auth.logout()
@@ -65,15 +67,20 @@ const { data: orgSettings, reload: reloadOrgSettings } = useAsyncData(() =>
 )
 
 const copied = ref(false)
+
 async function copyJoinCode() {
   if (!joinCodeData.value) return
+
   await navigator.clipboard.writeText(joinCodeData.value.joinCode)
   copied.value = true
-  setTimeout(() => (copied.value = false), 1500)
+  setTimeout(() => {
+    copied.value = false
+  }, 1500)
 }
 
 const confirmingRegenerate = ref(false)
 const regenerating = ref(false)
+
 async function regenerateJoinCode() {
   if (!confirmingRegenerate.value) {
     confirmingRegenerate.value = true
@@ -91,6 +98,7 @@ async function regenerateJoinCode() {
 
 const companyPasswordInput = ref('')
 const savingCompanyPassword = ref(false)
+
 async function saveCompanyPassword() {
   savingCompanyPassword.value = true
   try {
@@ -101,6 +109,7 @@ async function saveCompanyPassword() {
     savingCompanyPassword.value = false
   }
 }
+
 async function clearCompanyPassword() {
   savingCompanyPassword.value = true
   try {
@@ -112,6 +121,7 @@ async function clearCompanyPassword() {
 }
 
 const savingCollectTenure = ref(false)
+
 async function updateCollectTenure(value: boolean) {
   if (!orgSettings.value || savingCollectTenure.value) return
   savingCollectTenure.value = true
@@ -126,6 +136,15 @@ async function updateCollectTenure(value: boolean) {
 <template>
   <component :is="layoutComponent" :breadcrumb="t('nav.settings')">
     <div v-if="auth.currentUser" class="settings">
+      <section v-if="isAdmin" class="panel assistant-settings-card">
+        <div>
+          <h2>{{ t('automationSettings.title') }}</h2>
+          <p class="hint">{{ t('automationSettings.cardHint') }}</p>
+        </div>
+        <RouterLink class="assistant-settings-link" to="/settings/hr-assistant">
+          {{ t('automationSettings.cardLink') }}
+        </RouterLink>
+      </section>
       <section class="panel">
         <h2>{{ t('settings.userInfo') }}</h2>
         <dl>
@@ -260,6 +279,9 @@ async function updateCollectTenure(value: boolean) {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+.assistant-settings-card { display: grid; gap: var(--space-3); }
+.assistant-settings-card h2 { margin-bottom: var(--space-2); }
+.assistant-settings-link { color: var(--color-primary); font-weight: 600; justify-self: start; }
 
 dl {
   margin: 0;

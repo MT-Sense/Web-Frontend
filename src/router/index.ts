@@ -60,6 +60,12 @@ const router = createRouter({
       meta: { roles: ['admin'] as Role[] },
     },
     {
+      path: '/hr-assistant',
+      name: 'hr-assistant',
+      component: () => import('@/views/hr/HrAssistantView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+    },
+    {
       path: '/model-training',
       name: 'model-training',
       component: () => import('@/views/hr/ModelTrainingView.vue'),
@@ -92,6 +98,12 @@ const router = createRouter({
       name: 'survey-thank-you',
       component: () => import('@/views/survey/SurveyThankYouView.vue'),
       meta: { roles: ['admin', 'executive', 'employee'] as Role[] },
+    },
+    {
+      path: '/settings/hr-assistant',
+      name: 'hr-assistant-settings',
+      component: () => import('@/views/settings/HrAssistantSettingsView.vue'),
+      meta: { roles: ['admin'] as Role[] },
     },
     {
       path: '/settings',

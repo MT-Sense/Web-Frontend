@@ -8,7 +8,6 @@ import {
   BrainCircuit,
   Building2,
   Settings,
-  Upload,
   Wrench,
 } from '@lucide/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -22,6 +21,7 @@ const auth = useAuthStore()
 
 const items = computed<NavItem[]>(() => [
   { label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
+  { label: t('nav.hrAssistant'), to: '/hr-assistant', icon: BrainCircuit },
   { label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
   { label: t('nav.feed'), to: '/voices', icon: MessageSquare },
   { label: t('nav.periods'), to: '/survey-periods', icon: Wrench },
