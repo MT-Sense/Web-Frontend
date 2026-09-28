@@ -47,7 +47,17 @@ watch(() => [props.id, selectedPeriod.value, selectedDepartment.value], reload)
 
 const { data: actionItems, reload: reloadActionItems } = useAsyncData(() => feedApi.actionItems())
 
-const topic = computed(() => topicList.value?.find((t2) => t2.id === props.id))
+const topic = computed(() => {
+  const catalogTopic = topicList.value?.find((item) => item.id === props.id)
+  if (catalogTopic) {
+    return catalogTopic
+  }
+  if (!drilldown.value) {
+    return undefined
+  }
+
+  return { id: props.id, label: drilldown.value.label }
+})
 const departmentName = computed(() => drilldown.value?.departmentId === '__unassigned__'
   ? t('heatmap.unassigned')
   : drilldown.value?.departmentName)

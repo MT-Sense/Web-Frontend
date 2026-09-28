@@ -22,41 +22,77 @@ function normalizeSettings(settings: automation.SettingsResponse) {
   settings.settings.connectorType ||= settings.settings.jiraSite ? 'jira_cloud' : 'manual'
   settings.settings.toolName ||= settings.settings.connectorType === 'jira_cloud' ? 'Jira Cloud' : ''
   settings.settings.toolInstructions ??= ''
+
   return settings
 }
 
 async function load() {
-  busy.value = true;
-  error.value = '';
+  busy.value = true
+  error.value = ''
 
   try {
     const [settings, list] = await Promise.all([automation.getSettings(), departments()])
+
     config.value = normalizeSettings(settings)
     depts.value = list
-  } catch (e) { error.value = String(e instanceof Error ? e.message : e) }
-  finally { busy.value = false }
+  } catch (e) {
+    error.value = String(e instanceof Error ? e.message : e)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function persistSettings() {
+  if (!config.value) {
+    return null
+  }
+
+  const settings = await automation.saveSettings({
+    ...config.value.settings,
+    token: token.value,
+    clearToken: clearToken.value,
+  })
+
+  config.value = normalizeSettings(settings)
+  token.value = ''
+  clearToken.value = false
+
+  return config.value
 }
 
 async function save() {
   if (!config.value) return
-  busy.value = true;
-  error.value = '';
+
+  busy.value = true
+  error.value = ''
 
   try {
-    config.value = normalizeSettings(await automation.saveSettings({ ...config.value.settings, token: token.value, clearToken: clearToken.value }))
-    token.value = ''; clearToken.value = false
+    await persistSettings()
     toast.success(t('automationSettings.saved'), t('automationSettings.savedDetail'))
-  } catch (e) { error.value = String(e instanceof Error ? e.message : e) }
-  finally { busy.value = false }
+  } catch (e) {
+    error.value = String(e instanceof Error ? e.message : e)
+  } finally {
+    busy.value = false
+  }
 }
 
 async function test() {
-  busy.value = true;
-  error.value = '';
+  if (!config.value) return
 
-  try { toast.success(t('automationSettings.testPassed'), (await automation.testJira()).message) }
-  catch (e) { error.value = String(e instanceof Error ? e.message : e) }
-  finally { busy.value = false }
+  busy.value = true
+  error.value = ''
+
+  try {
+    await persistSettings()
+
+    const result = await automation.testJira()
+
+    toast.success(t('automationSettings.testPassed'), result.message)
+  } catch (e) {
+    error.value = String(e instanceof Error ? e.message : e)
+  } finally {
+    busy.value = false
+  }
 }
 
 onMounted(load)

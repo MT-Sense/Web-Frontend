@@ -13,11 +13,13 @@ import * as authApi from '@/api/auth'
 import * as settingsApi from '@/api/settings'
 import * as orgsApi from '@/api/orgs'
 import { setLocale } from '@/i18n'
+import { useToast } from '@/composables/useToast'
 
 const { t, locale } = useI18n()
 const { layoutComponent } = useRoleLayout()
 const auth = useAuthStore()
 const router = useRouter()
+const { toast } = useToast()
 
 const isAdmin = computed(() => (
   auth.currentRole === 'admin'
@@ -30,8 +32,38 @@ async function handleLogoutAllDevices() {
 
 const { data: history } = useAsyncData(() => settingsApi.submissionHistory())
 
+const editingName = ref(false)
+const fullNameInput = ref('')
+const savingName = ref(false)
 const savingNewRound = ref(false)
 const savingMonthlySummary = ref(false)
+
+function startEditingName() {
+  if (!auth.currentUser) return
+  fullNameInput.value = auth.currentUser.fullName
+  editingName.value = true
+}
+
+function cancelEditingName() {
+  editingName.value = false
+  fullNameInput.value = ''
+}
+
+async function saveName() {
+  if (!auth.currentUser || savingName.value) return
+  const fullName = fullNameInput.value.trim()
+  if (!fullName) return
+
+  savingName.value = true
+  try {
+    auth.currentUser = await authApi.updateMe({ fullName })
+    editingName.value = false
+    fullNameInput.value = ''
+    toast.success(t('settings.nameSaved'))
+  } finally {
+    savingName.value = false
+  }
+}
 
 async function updateNotifyNewRound(value: boolean) {
   if (!auth.currentUser || savingNewRound.value) return
@@ -147,8 +179,34 @@ async function updateCollectTenure(value: boolean) {
       </section>
       <section class="panel">
         <h2>{{ t('settings.userInfo') }}</h2>
-        <dl>
-          <dt>{{ auth.currentUser.fullName }}</dt>
+
+        <div v-if="editingName" class="name-editor">
+          <label>
+            {{ t('settings.fullName') }}
+            <Input
+              v-model="fullNameInput"
+              maxlength="100"
+              autocomplete="name"
+              :disabled="savingName"
+            />
+          </label>
+          <div class="actions">
+            <Button :disabled="savingName || !fullNameInput.trim()" @click="saveName">
+              {{ savingName ? t('settings.savingName') : t('common.save') }}
+            </Button>
+            <Button variant="secondary" :disabled="savingName" @click="cancelEditingName">
+              {{ t('common.cancel') }}
+            </Button>
+          </div>
+        </div>
+
+        <dl v-else>
+          <dt class="name-row">
+            <span>{{ auth.currentUser.fullName }}</span>
+            <Button variant="secondary" size="sm" @click="startEditingName">
+              {{ t('common.edit') }}
+            </Button>
+          </dt>
           <dd>
             {{ t(`role.${auth.currentUser.role}`) }} · {{ auth.currentUser.department }}
             <template v-if="auth.currentUser.position"> · {{ auth.currentUser.position }}</template>
@@ -289,6 +347,24 @@ dl {
 
 dt {
   font-weight: 700;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.name-editor {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.name-editor label {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
 }
 
 dd {

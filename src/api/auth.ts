@@ -24,6 +24,6 @@ export function me() {
   return api.get<CurrentUser>('/api/settings/me')
 }
 
-export function updateMe(payload: { notifyNewRound?: boolean; notifyMonthlySummary?: boolean }) {
+export function updateMe(payload: { fullName?: string; notifyNewRound?: boolean; notifyMonthlySummary?: boolean }) {
   return api.patch<CurrentUser>('/api/settings/me', payload)
 }

@@ -218,7 +218,7 @@ onMounted(load)
       </div>
     </details>
 
-    <details open>
+    <details>
       <summary>{{ t('routing.openCase') }}</summary>
       <p>{{ t('routing.openCaseHelp') }}</p>
 
