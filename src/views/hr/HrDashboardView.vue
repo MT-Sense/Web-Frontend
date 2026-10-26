@@ -16,11 +16,14 @@ import DepartmentSummaryTable from '@/components/charts/DepartmentSummaryTable.v
 import DashboardAlerts from '@/components/dashboard/DashboardAlerts.vue'
 import AiInsightPanel from '@/components/dashboard/AiInsightPanel.vue'
 import KnowledgeQAPanel from '@/components/dashboard/KnowledgeQAPanel.vue'
+import SendSummaryDialog from '@/components/dashboard/SendSummaryDialog.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useToast } from '@/composables/useToast'
 import * as dashboardApi from '@/api/dashboard'
 import * as periodsApi from '@/api/periods'
 import { ApiError } from '@/api/client'
+import { downloadCsv, toCsv, type CsvSection } from '@/utils/csv'
+import type { Locale } from '@/types/common'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -28,6 +31,7 @@ const { toast } = useToast()
 
 const selectedPeriod = ref('')
 const selectedDepartment = ref('all')
+const emailDialogOpen = ref(false)
 type TrendMetric = 'enps' | 'satisfaction' | 'responseRate' | 'burnoutRisk'
 const selectedTrendMetric = ref<TrendMetric>('satisfaction')
 
@@ -170,6 +174,74 @@ const trendForecast = computed(() => {
   }
 })
 
+/** Exports what the dashboard shows for the selected round. It only uses data the page
+ * already loaded, so anything hidden by the n<5 rule stays hidden in the file. */
+function exportCsv() {
+  const d = data.value
+  if (!d) return
+  const hidden = t('export.hidden')
+  const show = (s: { suppressed: boolean; data?: number }) => (s.suppressed ? hidden : s.data)
+  const period = periodOptions.value.find((o) => o.value === selectedPeriod.value)?.label ?? ''
+  const departmentName = (dep: dashboardApi.HeatmapRow['department']) =>
+    dep.id === '__unassigned__' ? t('heatmap.unassigned') : dep.name
+
+  const sections: CsvSection[] = [
+    {
+      title: t('export.hrTitle', { period }) + (isFiltered.value ? ` · ${selectedDepartmentName.value}` : ''),
+      headers: [t('export.metric'), t('export.value')],
+      rows: [
+        [t('kpi.satisfaction'), d.kpis.satisfaction.value],
+        [t('kpi.enps'), d.kpis.enps.value],
+        [t('export.enpsDelta'), d.kpis.enps.deltaVsLastMonth],
+        [t('kpi.responseRate'), `${d.kpis.responseRate.percentage}% (${d.kpis.responseRate.responded}/${d.kpis.responseRate.total})`],
+        [t('kpi.burnoutRisk'), `${d.kpis.burnoutRisk.percentage}%`],
+        [t('kpi.departmentsToWatch'), d.kpis.burnoutRisk.departmentsAtRisk],
+        [t('export.sentiment'), `${d.kpis.sentiment.positive}% / ${d.kpis.sentiment.neutral}% / ${d.kpis.sentiment.negative}%`],
+      ],
+    },
+    {
+      title: t('trend.title'),
+      headers: [t('export.month'), t('kpi.satisfaction'), t('kpi.enps'), t('kpi.responseRate'), t('kpi.burnoutRisk')],
+      rows: d.kpis.trend.map((p) => p.hasResponses
+        ? [p.month, p.satisfaction, p.enps, p.responseRate, p.burnoutRisk]
+        : [p.month, null, null, null, null]),
+    },
+    {
+      title: t('export.heatmapTitle'),
+      headers: [t('departmentScores.department'), ...heatmapTopics.value.map((topic) => topic.label[locale.value as Locale] || topic.label.th)],
+      rows: displayedHeatmapRows.value.map((row) => [
+        departmentName(row.department),
+        ...heatmapTopics.value.map((topic) => {
+          const c = row.cells.find((cell) => cell.topicId === topic.id)
+          return c ? show(c.score) : null
+        }),
+      ]),
+    },
+  ]
+  if (departmentSummaryRows.value.length) {
+    sections.push({
+      title: t('departmentScores.title'),
+      headers: [t('departmentScores.department'), t('departmentScores.responses'), t('departmentScores.average'), t('departmentScores.change'), t('departmentScores.forecast'), t('departmentScores.statusTitle')],
+      rows: departmentSummaryRows.value.map((r) => [
+        r.name,
+        r.responded.suppressed ? hidden : `${r.responded.data}/${r.total ?? ''}`,
+        show(r.score),
+        r.change,
+        r.forecast,
+        r.status === 'unavailable' ? hidden : t(`departmentScores.status.${r.status}`),
+      ]),
+    })
+  }
+  if (d.alerts?.length) {
+    sections.push({
+      title: t('export.alertsTitle'),
+      headers: [t('export.severity'), t('export.message')],
+      rows: d.alerts.map((a) => [a.severity, a.message]),
+    })
+  }
+  downloadCsv(`mt-sense-hr-${period || 'latest'}.csv`, toCsv(sections))
+}
+
 function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['department']) {
   router.push({
     path: `/dashboard/topics/${topicId}`,
@@ -187,16 +259,22 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         <DropdownSelect v-model="selectedDepartment" :options="departmentOptions" />
       </div>
       <div class="actions">
-        <Button variant="secondary">
+        <Button variant="secondary" :disabled="!data" @click="exportCsv">
           <Download :size="16" aria-hidden="true" />
           {{ t('common.export') }}
         </Button>
-        <Button variant="secondary">
+        <Button variant="secondary" @click="emailDialogOpen = true">
           <Mail :size="16" aria-hidden="true" />
           {{ t('common.sendEmail') }}
         </Button>
       </div>
     </div>
+
+    <SendSummaryDialog
+      v-model:open="emailDialogOpen"
+      :period-id="selectedPeriod"
+      :period-label="periodOptions.find((option) => option.value === selectedPeriod)?.label"
+    />
 
     <p v-if="loading">{{ t('common.loading') }}</p>
     <Alert v-else-if="error" variant="destructive">

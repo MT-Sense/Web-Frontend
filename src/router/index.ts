@@ -19,6 +19,16 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
     },
     {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/ForgotPasswordView.vue'),
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+    },
+    {
       path: '/signup',
       name: 'signup',
       component: () => import('@/views/onboarding/SignupView.vue'),
@@ -51,6 +61,30 @@ const router = createRouter({
       path: '/survey-periods',
       name: 'survey-periods',
       component: () => import('@/views/hr/SurveyPeriodsView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+    },
+    {
+      path: '/summaries',
+      name: 'hr-summaries',
+      component: () => import('@/views/hr/SummariesView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+    },
+    {
+      path: '/action-items',
+      name: 'action-items',
+      component: () => import('@/views/hr/ActionItemsView.vue'),
+      meta: { roles: ['admin', 'executive'] as Role[] },
+    },
+    {
+      path: '/feed-moderation',
+      name: 'feed-moderation',
+      component: () => import('@/views/hr/FeedModerationView.vue'),
+      meta: { roles: ['admin'] as Role[] },
+    },
+    {
+      path: '/users',
+      name: 'hr-users',
+      component: () => import('@/views/hr/UsersView.vue'),
       meta: { roles: ['admin'] as Role[] },
     },
     {

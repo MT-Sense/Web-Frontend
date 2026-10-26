@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download, Mail } from '@lucide/vue'
 import ExecutiveLayout from '@/layouts/ExecutiveLayout.vue'
@@ -11,12 +11,15 @@ import RadarChart from '@/components/charts/RadarChart.vue'
 import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import DecisionItemsList from '@/components/dashboard/DecisionItemsList.vue'
 import KnowledgeQAPanel from '@/components/dashboard/KnowledgeQAPanel.vue'
+import SendSummaryDialog from '@/components/dashboard/SendSummaryDialog.vue'
 import { visible } from '@/types/common'
 import type { Locale } from '@/types/common'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { downloadCsv, toCsv, type CsvSection } from '@/utils/csv'
 import * as dashboardApi from '@/api/dashboard'
 
 const { t, locale } = useI18n()
+const emailDialogOpen = ref(false)
 
 const { data: topicList } = useAsyncData(() => dashboardApi.topics())
 const { data: departmentList } = useAsyncData(() => dashboardApi.departments())
@@ -43,6 +46,40 @@ const departmentBarData = computed(() =>
   }),
 )
 
+/** Exports the aggregates on this page (latest round). Executives only ever receive
+ * suppression-gated aggregates, so the file contains nothing more than the screen. */
+function exportCsv() {
+  const health = executiveHealth.value
+  if (!health) return
+  const hidden = t('export.hidden')
+  const sections: CsvSection[] = [
+    {
+      title: t('export.executiveTitle'),
+      headers: [t('export.metric'), t('export.value')],
+      rows: [
+        [t('executive.orgHealth'), health.score],
+        [t('export.sentiment'), `${health.sentiment.positive}% / ${health.sentiment.neutral}% / ${health.sentiment.negative}%`],
+      ],
+    },
+    {
+      title: t('export.radarTitle'),
+      headers: [t('drilldown.topic'), t('export.thisRound'), t('export.lastRound')],
+      rows: radarAxes.value.map((axis) => [axis.label, axis.thisMonth, axis.lastMonth]),
+    },
+    {
+      title: t('export.departmentsTitle'),
+      headers: [t('departmentScores.department'), t('departmentScores.average')],
+      rows: departmentBarData.value.map((row) => [row.label, row.value.suppressed ? hidden : row.value.data]),
+    },
+    {
+      title: t('export.positionsTitle'),
+      headers: [t('export.position'), t('departmentScores.average')],
+      rows: health.positionComparison.map((p) => [p.name, p.score]),
+    },
+  ]
+  downloadCsv(`mt-sense-executive-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(sections))
+}
+
 const positionBarData = computed(() =>
   (executiveHealth.value?.positionComparison ?? []).map((p) => ({
     label: p.name,
@@ -55,16 +92,18 @@ const positionBarData = computed(() =>
   <ExecutiveLayout :breadcrumb="t('executive.orgHealth')">
     <div class="toolbar">
       <div class="actions">
-        <Button variant="secondary">
+        <Button variant="secondary" :disabled="!executiveHealth" @click="exportCsv">
           <Download :size="16" aria-hidden="true" />
           {{ t('common.export') }}
         </Button>
-        <Button variant="secondary">
+        <Button variant="secondary" @click="emailDialogOpen = true">
           <Mail :size="16" aria-hidden="true" />
           {{ t('common.sendEmail') }}
         </Button>
       </div>
     </div>
+
+    <SendSummaryDialog v-model:open="emailDialogOpen" />
 
     <PrivacyBanner variant="executive-rule" />
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Check, Circle, Copy, RefreshCw } from '@lucide/vue'
+import { Check, Circle, Copy, Mail, RefreshCw } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import * as authApi from '@/api/auth'
 import * as settingsApi from '@/api/settings'
 import * as orgsApi from '@/api/orgs'
+import * as emailApi from '@/api/email'
 import { setLocale } from '@/i18n'
 import { useToast } from '@/composables/useToast'
 
@@ -85,6 +86,38 @@ async function updateNotifyMonthlySummary(value: boolean) {
   }
 }
 
+// --- change own password ---
+const passwordFormOpen = ref(false)
+const passwordForm = reactive({ current: '', next: '', confirm: '' })
+const changingPassword = ref(false)
+const passwordError = ref('')
+
+function openPasswordForm() {
+  Object.assign(passwordForm, { current: '', next: '', confirm: '' })
+  passwordError.value = ''
+  passwordFormOpen.value = true
+}
+
+async function submitPasswordChange() {
+  if (changingPassword.value) return
+  if (passwordForm.next !== passwordForm.confirm) {
+    passwordError.value = t('settings.password.mismatch')
+    return
+  }
+  changingPassword.value = true
+  passwordError.value = ''
+  try {
+    // The API signs out other devices and returns a fresh session for this one.
+    auth.completeRegistration(await authApi.changePassword(passwordForm.current, passwordForm.next))
+    passwordFormOpen.value = false
+    toast.success(t('settings.password.changed'), t('settings.password.changedDetail'))
+  } catch (e) {
+    passwordError.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    changingPassword.value = false
+  }
+}
+
 function toggleLocale() {
   setLocale(locale.value === 'th' ? 'en' : 'th')
 }
@@ -149,6 +182,30 @@ async function clearCompanyPassword() {
     await reloadOrgSettings()
   } finally {
     savingCompanyPassword.value = false
+  }
+}
+
+const { data: emailStatus, reload: reloadEmailStatus } = useAsyncData(() =>
+  isAdmin.value ? emailApi.status() : Promise.resolve(null),
+)
+const sendingTestEmail = ref(false)
+const testEmailError = ref('')
+
+async function sendTestEmail() {
+  sendingTestEmail.value = true
+  testEmailError.value = ''
+  try {
+    const result = await emailApi.sendTest()
+    if (result.configured) {
+      toast.success(t('email.testSent'), t('email.testSentDetail', { email: result.sentTo }))
+    } else {
+      toast.info(t('email.testLogged'))
+    }
+  } catch (e) {
+    testEmailError.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    sendingTestEmail.value = false
+    reloadEmailStatus()
   }
 }
 
@@ -235,6 +292,25 @@ async function updateCollectTenure(value: boolean) {
         </label>
       </section>
 
+      <section v-if="isAdmin && emailStatus" class="panel">
+        <h2>{{ t('email.settingsTitle') }}</h2>
+        <p class="hint">
+          <template v-if="emailStatus.configured">{{ t('email.configured', { from: emailStatus.from }) }}</template>
+          <template v-else>{{ t('email.notConfigured') }}</template>
+        </p>
+        <p class="hint">
+          {{ t('email.queue', { pending: emailStatus.pending }) }}
+          <span v-if="emailStatus.failed > 0" class="danger-inline">
+            · {{ t('email.failedRecently', { failed: emailStatus.failed }) }}
+          </span>
+        </p>
+        <Button variant="secondary" size="sm" :disabled="sendingTestEmail" @click="sendTestEmail">
+          <Mail :size="14" aria-hidden="true" />
+          {{ sendingTestEmail ? t('email.sending') : t('email.sendTest') }}
+        </Button>
+        <p v-if="testEmailError" class="confirm-note" role="alert">{{ testEmailError }}</p>
+      </section>
+
       <section v-if="isAdmin && joinCodeData" class="panel">
         <h2>{{ t('settings.joinCode.sectionTitle') }}</h2>
         <div class="join-code-row">
@@ -315,9 +391,29 @@ async function updateCollectTenure(value: boolean) {
           </li>
         </ul>
         <div class="actions">
-          <Button variant="secondary">{{ t('settings.changePassword') }}</Button>
+          <Button variant="secondary" @click="openPasswordForm">{{ t('settings.changePassword') }}</Button>
           <Button variant="secondary" @click="handleLogoutAllDevices">{{ t('settings.logoutAllDevices') }}</Button>
         </div>
+        <form v-if="passwordFormOpen" class="password-form" @submit.prevent="submitPasswordChange">
+          <label>
+            {{ t('settings.password.current') }}
+            <Input v-model="passwordForm.current" type="password" autocomplete="current-password" required />
+          </label>
+          <label>
+            {{ t('settings.password.new') }}
+            <Input v-model="passwordForm.next" type="password" autocomplete="new-password" minlength="8" maxlength="72" required />
+          </label>
+          <label>
+            {{ t('settings.password.confirm') }}
+            <Input v-model="passwordForm.confirm" type="password" autocomplete="new-password" required />
+          </label>
+          <p class="hint">{{ t('settings.password.hint') }}</p>
+          <p v-if="passwordError" class="confirm-note" role="alert">{{ passwordError }}</p>
+          <div class="actions">
+            <Button type="submit" :disabled="changingPassword">{{ changingPassword ? t('settings.savingName') : t('settings.password.submit') }}</Button>
+            <Button type="button" variant="secondary" :disabled="changingPassword" @click="passwordFormOpen = false">{{ t('common.cancel') }}</Button>
+          </div>
+        </form>
       </section>
     </div>
   </component>
@@ -433,9 +529,13 @@ dd.muted {
   gap: var(--space-2);
 }
 
+.password-form { display: grid; gap: var(--space-3); max-width: 360px; margin-top: var(--space-4); }
+.password-form label { display: grid; gap: var(--space-1); font-size: var(--font-size-sm); }
 .join-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
 .join-code { font-size: var(--font-size-lg); font-weight: 700; letter-spacing: 0.1em; color: var(--color-accent-700); }
 .confirm-note { margin: 0; font-size: var(--font-size-xs); color: var(--color-danger); }
+.danger-inline { color: var(--color-danger); }
+.confirm-note[role='alert'] { margin-top: var(--space-2); }
 
 .muted-inline {
   color: var(--color-text-subtle);

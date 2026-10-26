@@ -63,7 +63,7 @@ async function handleSubmit() {
             <Checkbox v-model="rememberMe" />
             <span>{{ t('login.rememberMe') }}</span>
           </label>
-          <a href="#" @click.prevent>{{ t('login.forgotPassword') }}</a>
+          <RouterLink to="/forgot-password">{{ t('login.forgotPassword') }}</RouterLink>
         </div>
 
         <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>

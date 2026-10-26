@@ -1,35 +1,42 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { Download, Plus } from '@lucide/vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Download } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import SingleLineChart from '@/components/charts/SingleLineChart.vue'
 import ProgressBarLabeled from '@/components/charts/ProgressBarLabeled.vue'
+import ActionItemsManager from '@/components/dashboard/ActionItemsManager.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as dashboardApi from '@/api/dashboard'
-import * as feedApi from '@/api/feed'
+import * as periodsApi from '@/api/periods'
 import { ApiError } from '@/api/client'
+import { downloadCsv, toCsv, type CsvSection } from '@/utils/csv'
 import type { Locale } from '@/types/common'
 
 const props = defineProps<{ id: string }>()
 const { t, locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const selectedDepartment = computed(() => typeof route.query.department === 'string' ? route.query.department : undefined)
 const selectedPeriod = computed(() => typeof route.query.period === 'string' ? route.query.period : undefined)
-const hiddenForPrivacy = ref(false)
+
+/** Why the backend hid this topic: the n<5 rule, or comments still waiting for AI analysis. */
+const unavailable = ref<{ reason: 'suppressed' | 'analysis_pending'; pending: number } | null>(null)
 
 async function loadDrilldown() {
-  hiddenForPrivacy.value = false
+  unavailable.value = null
   try {
     return await dashboardApi.topicDrilldown(props.id, selectedPeriod.value, selectedDepartment.value)
   } catch (err) {
-    if (selectedDepartment.value && err instanceof ApiError && err.status === 404) {
-      hiddenForPrivacy.value = true
+    if (err instanceof ApiError && err.status === 404 && typeof err.body.reason === 'string') {
+      unavailable.value = {
+        reason: err.body.reason === 'analysis_pending' ? 'analysis_pending' : 'suppressed',
+        pending: Number(err.body.pendingAnalysis ?? 0),
+      }
       return null
     }
     throw err
@@ -37,6 +44,7 @@ async function loadDrilldown() {
 }
 
 const { data: topicList } = useAsyncData(() => dashboardApi.topics())
+const { data: periods } = useAsyncData(() => periodsApi.list())
 const {
   data: drilldown,
   loading,
@@ -45,7 +53,23 @@ const {
 } = useAsyncData(loadDrilldown)
 watch(() => [props.id, selectedPeriod.value, selectedDepartment.value], reload)
 
-const { data: actionItems, reload: reloadActionItems } = useAsyncData(() => feedApi.actionItems())
+const periodOptions = computed(() =>
+  (periods.value ?? []).map((p) => ({ value: p.id, label: `${p.year}-${String(p.month).padStart(2, '0')}` })),
+)
+// The backend defaults to the latest round; show that as selected when no ?period is set.
+const periodModel = computed({
+  get: () => selectedPeriod.value ?? periodOptions.value[0]?.value ?? '',
+  set: (period: string) => router.replace({ query: { ...route.query, period } }),
+})
+const topicModel = computed({
+  get: () => props.id,
+  set: (id: string) => router.replace({ path: `/dashboard/topics/${id}`, query: route.query }),
+})
+function clearDepartment() {
+  const query = { ...route.query }
+  delete query.department
+  router.replace({ query })
+}
 
 const topic = computed(() => {
   const catalogTopic = topicList.value?.find((item) => item.id === props.id)
@@ -69,40 +93,62 @@ const breadcrumb = computed(() => {
 const trendPoints = computed(
   () => drilldown.value?.trend.map((p) => ({ label: p.month.slice(5), value: p.score })) ?? [],
 )
-
-const relatedActionItems = computed(
-  () => (actionItems.value ?? []).filter((a) => topic.value && a.topic.th === topic.value.label.th),
-)
-
-const showAddAction = ref(false)
-const newAction = reactive({ assignee: '', targetDate: '' })
-const submitting = ref(false)
-
-async function submitAction() {
-  if (!topic.value || submitting.value) return
-  submitting.value = true
-  try {
-    await feedApi.createActionItem({
-      topic: topic.value.label,
-      topicId: topic.value.id,
-      assignee: newAction.assignee || 'TBD',
-      targetDate: newAction.targetDate || '',
+/** Scores and trend only. Sample comments are deliberately left out of the file so
+ * employee text never leaves the system as a download. */
+function exportCsv() {
+  const d = drilldown.value
+  if (!d) return
+  const name = topic.value?.label[locale.value as Locale] || topic.value?.label.th || props.id
+  const period = periodOptions.value.find((o) => o.value === periodModel.value)?.label ?? ''
+  const sections: CsvSection[] = [
+    {
+      title: t('export.topicTitle', { topic: name, period }) + (departmentName.value ? ` · ${departmentName.value}` : ''),
+      headers: [t('export.metric'), t('export.value')],
+      rows: [
+        [t('drilldown.topicScore'), d.score],
+        [t('drilldown.companyAverage'), d.companyAverage],
+        [t('drilldown.respondents'), d.respondentCount],
+        [t('drilldown.percentageTagged'), `${d.percentageTagged}%`],
+        [t('export.sentiment'), `${d.sentiment.positive}% / ${d.sentiment.neutral}% / ${d.sentiment.negative}%`],
+      ],
+    },
+    { title: t('drilldown.trendTitle'), headers: [t('export.month'), t('drilldown.topicScore')], rows: d.trend.map((p) => [p.month, p.score]) },
+  ]
+  if (d.subIssues.length) {
+    sections.push({
+      title: t('drilldown.subIssues'),
+      headers: [t('export.issue'), '%'],
+      rows: d.subIssues.map((i) => [i.label[locale.value as Locale] || i.label.th, i.percentage]),
     })
-    newAction.assignee = ''
-    newAction.targetDate = ''
-    showAddAction.value = false
-    await reloadActionItems()
-  } finally {
-    submitting.value = false
   }
+  downloadCsv(`mt-sense-topic-${props.id}-${period || 'latest'}.csv`, toCsv(sections))
 }
 </script>
 
 <template>
   <HrLayout :breadcrumb="breadcrumb">
+    <div class="toolbar">
+      <label>
+        {{ t('drilldown.round') }}
+        <select v-model="periodModel">
+          <option v-for="option in periodOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+      <label>
+        {{ t('drilldown.topic') }}
+        <select v-model="topicModel">
+          <option v-for="item in topicList ?? []" :key="item.id" :value="item.id">{{ item.label[locale as Locale] || item.label.th }}</option>
+        </select>
+      </label>
+      <Button v-if="selectedDepartment" variant="secondary" size="sm" @click="clearDepartment">{{ t('drilldown.allDepartments') }}</Button>
+    </div>
+
     <p v-if="loading">{{ t('common.loading') }}</p>
-    <Alert v-else-if="hiddenForPrivacy">
-      <AlertDescription>{{ t('privacy.suppressed') }}</AlertDescription>
+    <Alert v-else-if="unavailable?.reason === 'analysis_pending'">
+      <AlertDescription>{{ t('drilldown.analysisPending', { count: unavailable.pending }) }}</AlertDescription>
+    </Alert>
+    <Alert v-else-if="unavailable">
+      <AlertDescription>{{ t('drilldown.suppressed') }}</AlertDescription>
     </Alert>
     <Alert v-else-if="error" variant="destructive">
       <AlertDescription>
@@ -110,7 +156,6 @@ async function submitAction() {
         <Button variant="link" size="sm" @click="reload">{{ t('common.retry') }}</Button>
       </AlertDescription>
     </Alert>
-
     <div v-else-if="drilldown" class="drilldown">
       <p v-if="drilldown.departmentId" class="scope-label">
         {{ t('drilldown.departmentScope', { name: departmentName }) }}
@@ -139,7 +184,7 @@ async function submitAction() {
       <section class="panel">
         <div class="panel-header">
           <h2>{{ t('drilldown.trendTitle') }}</h2>
-          <Button variant="secondary" size="sm">
+          <Button variant="secondary" size="sm" @click="exportCsv">
             <Download :size="15" aria-hidden="true" />
             {{ t('common.export') }}
           </Button>
@@ -171,26 +216,7 @@ async function submitAction() {
         </section>
       </div>
 
-      <section v-if="!drilldown.departmentId" class="panel">
-        <div class="panel-header">
-          <h2>Action Items</h2>
-          <Button size="sm" @click="showAddAction = true">
-            <Plus :size="15" aria-hidden="true" />
-            {{ t('drilldown.addAction') }}
-          </Button>
-        </div>
-        <div v-if="showAddAction" class="add-action-form">
-          <Input v-model="newAction.assignee" placeholder="Assignee" class="max-w-48" />
-          <Input v-model="newAction.targetDate" type="date" class="max-w-44" />
-          <Button :disabled="submitting" @click="submitAction">{{ t('common.save') }}</Button>
-          <Button variant="secondary" @click="showAddAction = false">{{ t('common.cancel') }}</Button>
-        </div>
-        <ul class="action-list">
-          <li v-for="item in relatedActionItems" :key="item.id">
-            {{ item.assignee }} — {{ item.targetDate }} ({{ item.status }})
-          </li>
-        </ul>
-      </section>
+      <ActionItemsManager v-if="!drilldown.departmentId" :topic-id="id" />
     </div>
   </HrLayout>
 </template>
@@ -290,18 +316,33 @@ async function submitAction() {
   font-size: var(--font-size-sm);
 }
 
-.add-action-form {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  align-items: flex-end;
+  gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
-.action-list {
-  margin: 0;
-  padding-left: var(--space-4);
-  font-size: var(--font-size-sm);
+.toolbar label {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--color-text-muted);
+}
+
+.toolbar select {
+  height: 36px;
+  min-width: 160px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 var(--space-2);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
 }
 
 @media (max-width: 900px) {

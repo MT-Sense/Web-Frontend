@@ -17,11 +17,17 @@ export interface FeedList {
   offset: number
 }
 
+export type SummaryStatus = 'draft' | 'published'
+
 export interface PublishedSummary {
   id: string
   title: LocalizedText
   body: LocalizedText
+  /** YYYY-MM-DD, or "" for a draft. */
   publishedAt: string
+  /** The survey round this summary is about, or "". */
+  periodId: string
+  status: SummaryStatus
 }
 
 export function list(
@@ -50,4 +56,29 @@ export function actionItems() {
 
 export function createActionItem(payload: CreateActionItemPayload) {
   return api.post<ActionItem>('/api/action-items', payload)
+}
+
+/** HR only: opted-in posts that have not been published or rejected yet. */
+export function pendingModeration() {
+  return api.get<FeedPost[]>('/api/feed/pending')
+}
+
+/** HR only: publish/reject a post (gate two), set HR's public reply and link an action item ("" removes either). */
+export function moderate(postId: string, payload: { published?: boolean; hrReply?: string; actionItemId?: string }) {
+  return api.patch<FeedPost>(`/api/feed/${postId}/moderate`, payload)
+}
+
+export interface UpdateActionItemPayload {
+  status?: ActionItem['status']
+  assignee?: string
+  targetDate?: string
+}
+
+/** HR can change any item; an executive only the ones they opened (`createdByMe`). */
+export function updateActionItem(id: string, payload: UpdateActionItemPayload) {
+  return api.patch<ActionItem>(`/api/action-items/${id}`, payload)
+}
+
+export function deleteActionItem(id: string) {
+  return api.delete<void>(`/api/action-items/${id}`)
 }

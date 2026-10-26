@@ -7,7 +7,12 @@ import {
   MessageSquare,
   BrainCircuit,
   Building2,
+  FileEdit,
+  ListChecks,
+  Newspaper,
   Settings,
+  Users,
+  ShieldCheck,
   Wrench,
 } from '@lucide/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -19,19 +24,36 @@ withDefaults(defineProps<{ breadcrumb?: string }>(), { breadcrumb: '' })
 const { t } = useI18n()
 const auth = useAuthStore()
 
-const items = computed<NavItem[]>(() => [
-  { label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
-  { label: t('nav.hrAssistant'), to: '/hr-assistant', icon: BrainCircuit },
-  { label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
-  { label: t('nav.feed'), to: '/voices', icon: MessageSquare },
-  { label: t('nav.periods'), to: '/survey-periods', icon: Wrench },
-  { label: t('departments.title'), to: '/departments', icon: Building2 },
-  ...(auth.currentUser?.email?.trim().toLowerCase() === 'test@kmitl.ac.th'
-    ? [{ label: t('modelTraining.title'), to: '/model-training', icon: BrainCircuit }]
-    : []),
-  // { label: t('nav.reports'), to: '/dashboard', icon: Upload },
-  { label: t('nav.settings'), to: '/settings', icon: Settings },
-])
+const items = computed<NavItem[]>(() => {
+  const overview = t('navSections.overview')
+  const voices = t('navSections.voices')
+  const surveys = t('navSections.surveys')
+  const organization = t('navSections.organization')
+  const system = t('navSections.system')
+  return [
+    { section: overview, label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
+    { section: overview, label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
+    { section: overview, label: t('nav.hrAssistant'), to: '/hr-assistant', icon: BrainCircuit },
+
+    { section: voices, label: t('nav.feed'), to: '/voices', icon: MessageSquare },
+    { section: voices, label: t('nav.moderation'), to: '/feed-moderation', icon: ShieldCheck },
+    { section: voices, label: t('nav.summaries'), to: '/summaries', icon: Newspaper },
+    { section: voices, label: t('nav.actionItems'), to: '/action-items', icon: ListChecks },
+
+    { section: surveys, label: t('nav.periods'), to: '/survey-periods', icon: Wrench },
+    // HR are employees too: they answer the same anonymous survey.
+    { section: surveys, label: t('nav.mySurveys'), to: '/survey', icon: FileEdit },
+
+    { section: organization, label: t('nav.users'), to: '/users', icon: Users },
+    { section: organization, label: t('departments.title'), to: '/departments', icon: Building2 },
+
+    ...(auth.currentUser?.email?.trim().toLowerCase() === 'test@kmitl.ac.th'
+      ? [{ section: system, label: t('modelTraining.title'), to: '/model-training', icon: BrainCircuit }]
+      : []),
+    // { section: system, label: t('nav.reports'), to: '/dashboard', icon: Upload },
+    { section: system, label: t('nav.settings'), to: '/settings', icon: Settings },
+  ]
+})
 </script>
 
 <template>

@@ -38,10 +38,13 @@ async function ensureRefreshed(): Promise<boolean> {
 export class ApiError extends Error {
   status: number
   details: string[]
-  constructor(status: number, message: string, details: string[] = []) {
+  /** The parsed JSON error body, for endpoints that send extra fields (e.g. a `reason`). */
+  body: Record<string, unknown>
+  constructor(status: number, message: string, details: string[] = [], body: Record<string, unknown> = {}) {
     super(message)
     this.status = status
     this.details = details
+    this.body = body
     this.name = 'ApiError'
   }
 }
@@ -53,18 +56,18 @@ interface RequestOptions {
   auth?: boolean
 }
 
-async function parseErrorMessage(res: Response): Promise<{ message: string; details: string[] }> {
+async function parseErrorMessage(res: Response): Promise<{ message: string; details: string[]; body: Record<string, unknown> }> {
   try {
     const data = await res.clone().json()
-    if (typeof data.error === 'string') return { message: data.error, details: [] }
+    if (typeof data.error === 'string') return { message: data.error, details: [], body: data }
     if (Array.isArray(data.errors)) {
       const details = data.errors.filter((item: unknown): item is string => typeof item === 'string')
-      return { message: details[0] ?? res.statusText, details }
+      return { message: details[0] ?? res.statusText, details, body: data }
     }
   } catch {
     // body wasn't JSON — fall through to statusText
   }
-  return { message: res.statusText || `request failed with status ${res.status}`, details: [] }
+  return { message: res.statusText || `request failed with status ${res.status}`, details: [], body: {} }
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
@@ -94,7 +97,7 @@ export async function request<T>(path: string, options: RequestOptions = {}, isR
 
   if (!res.ok) {
     const parsed = await parseErrorMessage(res)
-    throw new ApiError(res.status, parsed.message, parsed.details)
+    throw new ApiError(res.status, parsed.message, parsed.details, parsed.body)
   }
 
   if (res.status === 204) {

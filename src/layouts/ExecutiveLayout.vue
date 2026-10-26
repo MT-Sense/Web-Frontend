@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MessageSquare, Settings, TrendingUp } from '@lucide/vue'
+import { FileEdit, ListChecks, MessageSquare, Settings, TrendingUp } from '@lucide/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import SidebarNav, { type NavItem } from '@/components/layout/SidebarNav.vue'
 
@@ -12,6 +12,8 @@ const { t } = useI18n()
 const items = computed<NavItem[]>(() => [
   { label: t('nav.dashboard'), to: '/executive', icon: TrendingUp },
   { label: t('nav.feed'), to: '/voices', icon: MessageSquare },
+  { label: t('nav.actionItems'), to: '/action-items', icon: ListChecks },
+  { label: t('nav.mySurveys'), to: '/survey', icon: FileEdit },
   { label: t('nav.settings'), to: '/settings', icon: Settings },
 ])
 </script>

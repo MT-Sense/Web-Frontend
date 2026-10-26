@@ -93,6 +93,7 @@ function handleVoted(updated: FeedPost) {
         <div class="posts">
           <FeedPostCard v-for="post in posts" :key="post.id" :post="post" @voted="handleVoted" />
         </div>
+        <p v-if="!loading && !error && posts.length === 0" class="panel empty-feed">{{ t('feed.empty') }}</p>
         <Button v-if="hasMore" variant="secondary" class="load-more" @click="loadMore">
           {{ t('common.loadMore') }}
         </Button>
@@ -107,6 +108,12 @@ function handleVoted(updated: FeedPost) {
 </template>
 
 <style scoped>
+.empty-feed {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
 .feed-layout {
   display: grid;
   grid-template-columns: 1fr 320px;

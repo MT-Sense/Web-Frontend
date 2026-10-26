@@ -19,6 +19,7 @@ export interface TopicSubIssue {
 }
 
 export interface TopicDrilldown {
+  label: LocalizedText
   topicId: string
   departmentId?: string
   departmentName?: string

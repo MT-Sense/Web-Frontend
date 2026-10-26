@@ -10,6 +10,8 @@ export interface NavItem {
   label: string
   to: string
   icon: Component
+  /** Heading of the group this item belongs to; a heading is drawn where it changes. */
+  section?: string
 }
 
 const props = defineProps<{
@@ -41,6 +43,12 @@ watch(collapsed, (value) => {
 })
 
 watch(() => route.fullPath, () => (drawerOpen.value = false))
+
+/** True for the first item of a new section, where the heading goes. */
+function startsSection(index: number) {
+  const section = props.items[index]?.section
+  return !!section && section !== props.items[index - 1]?.section
+}
 </script>
 
 <template>
@@ -54,16 +62,13 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
     <SheetContent side="left" class="w-[var(--sidebar-width)] p-0">
       <SheetTitle class="px-5 pt-5 text-base font-bold">{{ t('app.name') }}</SheetTitle>
       <nav class="sidebar drawer-nav full">
-        <router-link
-          v-for="item in props.items"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          active-class="active"
-        >
-          <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
-          <span class="label">{{ item.label }}</span>
-        </router-link>
+        <template v-for="(item, index) in props.items" :key="item.to">
+          <p v-if="startsSection(index)" class="section-label">{{ item.section }}</p>
+          <router-link :to="item.to" class="nav-item" active-class="active">
+            <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
+            <span class="label">{{ item.label }}</span>
+          </router-link>
+        </template>
       </nav>
     </SheetContent>
   </Sheet>
@@ -83,18 +88,22 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
         <PanelLeftClose v-else :size="20" aria-hidden="true" />
       </button>
     </div>
-    <router-link
-      v-for="item in props.items"
-      :key="item.to"
-      :to="item.to"
-      class="nav-item"
-      active-class="active"
-      :title="collapsed ? item.label : undefined"
-    >
-      <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
-      <span v-if="!collapsed" class="label">{{ item.label }}</span>
-      <span v-else class="visually-hidden">{{ item.label }}</span>
-    </router-link>
+    <template v-for="(item, index) in props.items" :key="item.to">
+      <template v-if="startsSection(index)">
+        <p v-if="!collapsed" class="section-label">{{ item.section }}</p>
+        <hr v-else class="section-divider" :aria-label="item.section" />
+      </template>
+      <router-link
+        :to="item.to"
+        class="nav-item"
+        active-class="active"
+        :title="collapsed ? item.label : undefined"
+      >
+        <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
+        <span v-if="!collapsed" class="label">{{ item.label }}</span>
+        <span v-else class="visually-hidden">{{ item.label }}</span>
+      </router-link>
+    </template>
   </nav>
 </template>
 
@@ -161,7 +170,7 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   text-decoration: none;
@@ -190,6 +199,27 @@ watch(() => route.fullPath, () => (drawerOpen.value = false))
 
 .icon {
   flex: none;
+}
+
+.section-label {
+  margin: var(--space-3) 0 var(--space-1);
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.section-label:first-of-type {
+  margin-top: 0;
+}
+
+.section-divider {
+  width: 60%;
+  margin: var(--space-2) 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
 }
 
 .drawer-trigger {
