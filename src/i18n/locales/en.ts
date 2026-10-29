@@ -243,8 +243,8 @@ export default {
     },
     noResponses: 'No responses',
     empty: 'No department data for this selection',
-    headcountNote: 'Total means active accounts currently in the department. Groups with 1–4 responses have their counts and scores hidden.',
-    methodNote: 'Estimate = current score + change from last month, limited to 1–5. Shown only when both months have at least 5 responses. Status: Good ≥4, Watch 3–3.9, At risk <3.',
+    headcountNote: 'Total means active accounts currently in the department. Groups with 1 - 4 responses have their counts and scores hidden.',
+    methodNote: 'Estimate = current score + change from last month, limited to 1 - 5. Shown only when both months have at least 5 responses. Status: Good ≥4, Watch 3 - 3.9, At risk <3.',
   },
   wordcloud: {
     title: 'Frequently mentioned terms',
@@ -327,7 +327,7 @@ export default {
   },
   periods: {
     title: 'Survey Periods',
-    subtitle: 'Every round is the same fixed survey: satisfaction score 1-5 + an open comment.',
+    subtitle: 'Every round is the same fixed survey: satisfaction score 1 - 5 + an open comment.',
     openNext: '+ Open next round',
     close: 'Close',
     open: 'Open',
@@ -339,7 +339,7 @@ export default {
     import: {
       title: 'Import responses from Excel',
       chooseFile: 'Import Excel',
-      format: 'First sheet in .xlsx: A Department, B Position, C Score (1–5), D Comment · up to 250 rows/5 MB · Position is not used yet',
+      format: 'First sheet in .xlsx: A Department, B Position, C Score (1 - 5), D Comment · up to 250 rows/5 MB · Position is not used yet',
       anonymousNote: 'Imported responses are not linked to employee accounts or marked as submitted. If responses exceed active accounts, the dashboard response rate may not reflect the eligible population.',
       invalidFile: 'Choose an .xlsx file no larger than 5 MB',
       checking: 'Checking workbook structure and departments…',

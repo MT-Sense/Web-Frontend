@@ -606,7 +606,6 @@ textarea {
 }
 
 .enabled-field {
-  align-self: center;
   white-space: nowrap;
 }
 

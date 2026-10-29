@@ -65,7 +65,6 @@ function departmentName(id?: string) {
 .warning .severity { color: var(--color-warning); }
 
 .panel h2 {
-  margin: 0 0 var(--space-4);
   font-size: var(--font-size-md);
   font-weight: 600;
   letter-spacing: -0.01em;

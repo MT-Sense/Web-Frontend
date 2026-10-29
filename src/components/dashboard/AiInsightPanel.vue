@@ -97,4 +97,11 @@ h2 {
   flex-direction: column;
   gap: var(--space-3);
 }
+
+.panel h2 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 </style>
