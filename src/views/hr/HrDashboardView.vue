@@ -33,14 +33,37 @@ const { toast } = useToast()
 
 const route = useRoute()
 const selectedPeriod = computed({
-  get: () => typeof route.query.period === 'string' ? route.query.period : '',
-  set: period => { void router.replace({ query: { ...route.query, period } }) },
+  get: () => (typeof route.query.period === 'string' ? route.query.period : ''),
+  set: (period) => {
+    void router.replace({ query: { ...route.query, period } })
+  },
 })
 const selectedDepartment = computed({
-  get: () => typeof route.query.department === 'string' ? route.query.department : 'all',
-  set: department => { void router.replace({ query: { ...route.query, department: department === 'all' ? undefined : department } }) },
+  get: () => (typeof route.query.department === 'string' ? route.query.department : 'all'),
+  set: (department) => {
+    void router.replace({
+      query: { ...route.query, department: department === 'all' ? undefined : department },
+    })
+  },
 })
 const emailDialogOpen = ref(false)
+const metricValue = (value: number | null, suffix = '') =>
+  value === null ? '—' : `${value}${suffix}`
+const metricNote = computed(() =>
+  t(data.value?.kpis.dataState === 'suppressed' ? 'metrics.insufficient' : 'metrics.noResponses'),
+)
+const comparisonLabel = computed(() => {
+  const delta = data.value?.kpis.enps.deltaVsLastMonth
+  return delta == null
+    ? t('metrics.noComparison')
+    : t('metrics.delta', { value: `${delta >= 0 ? '+' : ''}${delta}` })
+})
+const responseCountLabel = computed(() => {
+  const rate = data.value?.kpis.responseRate
+  if (!rate || rate.percentage === null || rate.responded === null || rate.total === null)
+    return t('metrics.noDenominator')
+  return `${rate.responded}/${rate.total}`
+})
 type TrendMetric = 'enps' | 'satisfaction' | 'responseRate' | 'burnoutRisk'
 const selectedTrendMetric = ref<TrendMetric>('satisfaction')
 
@@ -73,7 +96,16 @@ async function loadInsight(period?: string) {
 async function loadDashboard() {
   const period = selectedPeriod.value || undefined
   const department = selectedDepartment.value
-  const [kpis, departmentTrend, heatmap, departmentSummary, wordCloud, insight, alerts, extraQuestions] = await Promise.all([
+  const [
+    kpis,
+    departmentTrend,
+    heatmap,
+    departmentSummary,
+    wordCloud,
+    insight,
+    alerts,
+    extraQuestions,
+  ] = await Promise.all([
     dashboardApi.hrKpis(period),
     department === 'all' ? Promise.resolve(null) : dashboardApi.departmentTrend(department, period),
     dashboardApi.heatmap(period),
@@ -83,7 +115,16 @@ async function loadDashboard() {
     dashboardApi.alerts(period).catch(() => null),
     dashboardApi.extraQuestions(period),
   ])
-  return { kpis, departmentTrend, heatmap, departmentSummary, wordCloud, insight, alerts, extraQuestions }
+  return {
+    kpis,
+    departmentTrend,
+    heatmap,
+    departmentSummary,
+    wordCloud,
+    insight,
+    alerts,
+    extraQuestions,
+  }
 }
 
 const { data, loading, error, reload } = useAsyncData(loadDashboard)
@@ -107,19 +148,24 @@ const departmentOptions = computed(() => [
 ])
 
 const isFiltered = computed(() => selectedDepartment.value !== 'all')
-const selectedDepartmentName = computed(() =>
-  departmentOptions.value.find((option) => option.value === selectedDepartment.value)?.label ?? '',
+const selectedDepartmentName = computed(
+  () =>
+    departmentOptions.value.find((option) => option.value === selectedDepartment.value)?.label ??
+    '',
 )
 const heatmapRows = computed(() =>
   selectedDepartment.value === 'all'
     ? (data.value?.heatmap.rows ?? [])
-    : (data.value?.heatmap.rows.filter((row) => row.department.id === selectedDepartment.value) ?? []),
+    : (data.value?.heatmap.rows.filter((row) => row.department.id === selectedDepartment.value) ??
+      []),
 )
 const heatmapTopics = computed(() => {
   const topics = data.value?.heatmap.topics ?? []
   if (!isFiltered.value) return topics
   const visibleTopicIDs = new Set(
-    heatmapRows.value.flatMap((row) => row.cells.filter((cell) => !cell.score.suppressed).map((cell) => cell.topicId)),
+    heatmapRows.value.flatMap((row) =>
+      row.cells.filter((cell) => !cell.score.suppressed).map((cell) => cell.topicId),
+    ),
   )
   return topics.filter((topic) => visibleTopicIDs.has(topic.id))
 })
@@ -138,19 +184,46 @@ const departmentSummaryRows = computed(() => {
     : rows.filter((row) => row.departmentId === selectedDepartment.value)
 })
 
-watch(() => data.value?.heatmap.rows, (rows) => {
-  if (rows && selectedDepartment.value !== 'all' && !rows.some((row) => row.department.id === selectedDepartment.value)) {
-    selectedDepartment.value = 'all'
-  }
-})
+watch(
+  () => data.value?.heatmap.rows,
+  (rows) => {
+    if (
+      rows &&
+      selectedDepartment.value !== 'all' &&
+      !rows.some((row) => row.department.id === selectedDepartment.value)
+    ) {
+      selectedDepartment.value = 'all'
+    }
+  },
+)
 
 const trendMetrics = computed(() => [
-  { key: 'satisfaction' as const, label: t('kpi.satisfaction'), min: 1, max: 5, format: 'score' as const },
+  {
+    key: 'satisfaction' as const,
+    label: t('kpi.satisfaction'),
+    min: 1,
+    max: 5,
+    format: 'score' as const,
+  },
   { key: 'enps' as const, label: t('kpi.enps'), min: -100, max: 100, format: 'number' as const },
-  { key: 'responseRate' as const, label: t('kpi.responseRate'), min: 0, max: 100, format: 'percent' as const },
-  { key: 'burnoutRisk' as const, label: t('kpi.burnoutRisk'), min: 0, max: 100, format: 'percent' as const },
+  {
+    key: 'responseRate' as const,
+    label: t('kpi.responseRate'),
+    min: 0,
+    max: 100,
+    format: 'percent' as const,
+  },
+  {
+    key: 'burnoutRisk' as const,
+    label: t('kpi.burnoutRisk'),
+    min: 0,
+    max: 100,
+    format: 'percent' as const,
+  },
 ])
-const activeTrendMetric = computed(() => trendMetrics.value.find((metric) => metric.key === selectedTrendMetric.value)!)
+const activeTrendMetric = computed(() =>
+  trendMetrics.value.find((metric) => metric.key === selectedTrendMetric.value)!,
+)
 const trendPoints = computed(() => {
   if (isFiltered.value) {
     return (data.value?.departmentTrend ?? []).map((point) => ({
@@ -196,28 +269,56 @@ function exportCsv() {
 
   const sections: CsvSection[] = [
     {
-      title: t('export.hrTitle', { period }) + (isFiltered.value ? ` · ${selectedDepartmentName.value}` : ''),
+      title:
+        t('export.hrTitle', { period }) +
+        (isFiltered.value ? ` · ${selectedDepartmentName.value}` : ''),
       headers: [t('export.metric'), t('export.value')],
       rows: [
         [t('kpi.satisfaction'), d.kpis.satisfaction.value],
         [t('kpi.enps'), d.kpis.enps.value],
         [t('export.enpsDelta'), d.kpis.enps.deltaVsLastMonth],
-        [t('kpi.responseRate'), `${d.kpis.responseRate.percentage}% (${d.kpis.responseRate.responded}/${d.kpis.responseRate.total})`],
-        [t('kpi.burnoutRisk'), `${d.kpis.burnoutRisk.percentage}%`],
+        [
+          t('kpi.responseRate'),
+          d.kpis.responseRate.percentage === null
+            ? hidden
+            : `${d.kpis.responseRate.percentage}% (${d.kpis.responseRate.responded}/${d.kpis.responseRate.total})`,
+        ],
+        [
+          t('kpi.burnoutRisk'),
+          d.kpis.burnoutRisk.percentage === null ? hidden : `${d.kpis.burnoutRisk.percentage}%`,
+        ],
         [t('kpi.departmentsToWatch'), d.kpis.burnoutRisk.departmentsAtRisk],
-        [t('export.sentiment'), `${d.kpis.sentiment.positive}% / ${d.kpis.sentiment.neutral}% / ${d.kpis.sentiment.negative}%`],
+        [
+          t('export.sentiment'),
+          d.kpis.sentiment === null
+            ? hidden
+            : `${d.kpis.sentiment.positive}% / ${d.kpis.sentiment.neutral}% / ${d.kpis.sentiment.negative}%`,
+        ],
       ],
     },
     {
       title: t('trend.title'),
-      headers: [t('export.month'), t('kpi.satisfaction'), t('kpi.enps'), t('kpi.responseRate'), t('kpi.burnoutRisk')],
-      rows: d.kpis.trend.map((p) => p.hasResponses
-        ? [p.month, p.satisfaction, p.enps, p.responseRate, p.burnoutRisk]
-        : [p.month, null, null, null, null]),
+      headers: [
+        t('export.month'),
+        t('kpi.satisfaction'),
+        t('kpi.enps'),
+        t('kpi.responseRate'),
+        t('kpi.burnoutRisk'),
+      ],
+      rows: d.kpis.trend.map((p) =>
+        p.hasResponses
+          ? [p.month, p.satisfaction, p.enps, p.responseRate, p.burnoutRisk]
+          : [p.month, null, null, null, null],
+      ),
     },
     {
       title: t('export.heatmapTitle'),
-      headers: [t('departmentScores.department'), ...heatmapTopics.value.map((topic) => topic.label[locale.value as Locale] || topic.label.th)],
+      headers: [
+        t('departmentScores.department'),
+        ...heatmapTopics.value.map(
+          (topic) => topic.label[locale.value as Locale] || topic.label.th,
+        ),
+      ],
       rows: displayedHeatmapRows.value.map((row) => [
         departmentName(row.department),
         ...heatmapTopics.value.map((topic) => {
@@ -230,7 +331,14 @@ function exportCsv() {
   if (departmentSummaryRows.value.length) {
     sections.push({
       title: t('departmentScores.title'),
-      headers: [t('departmentScores.department'), t('departmentScores.responses'), t('departmentScores.average'), t('departmentScores.change'), t('departmentScores.forecast'), t('departmentScores.statusTitle')],
+      headers: [
+        t('departmentScores.department'),
+        t('departmentScores.responses'),
+        t('departmentScores.average'),
+        t('departmentScores.change'),
+        t('departmentScores.forecast'),
+        t('departmentScores.statusTitle'),
+      ],
       rows: departmentSummaryRows.value.map((r) => [
         r.name,
         r.responded.suppressed ? hidden : `${r.responded.data}/${r.total ?? ''}`,
@@ -254,10 +362,14 @@ function exportCsv() {
 function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['department']) {
   router.push({
     path: `/dashboard/topics/${topicId}`,
-    query: { department: department.id, period: selectedPeriod.value || undefined, returnPeriod: selectedPeriod.value || undefined, returnDepartment: selectedDepartment.value },
+    query: {
+      department: department.id,
+      period: selectedPeriod.value || undefined,
+      returnPeriod: selectedPeriod.value || undefined,
+      returnDepartment: selectedDepartment.value,
+    },
   })
 }
-
 </script>
 
 <template>
@@ -298,27 +410,32 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         <KpiCard
           :label="t('kpi.enps')"
           :description="t('dashboardHelp.enps')"
-          :value="String(data.kpis.enps.value)"
-          :sublabel="`${data.kpis.enps.deltaVsLastMonth >= 0 ? '+' : ''}${data.kpis.enps.deltaVsLastMonth} vs last month`"
+          :value="metricValue(data.kpis.enps.value)"
+          :sublabel="data.kpis.enps.value === null ? metricNote : comparisonLabel"
           trend="up"
         />
         <KpiCard
           :label="t('kpi.satisfaction')"
           :description="t('dashboardHelp.satisfaction')"
-          :value="`${data.kpis.satisfaction.value}/5`"
-          :trend="data.kpis.satisfaction.trend"
+          :value="metricValue(data.kpis.satisfaction.value, '/5')"
+          :trend="data.kpis.satisfaction.trend ?? undefined"
+          :sublabel="data.kpis.satisfaction.value === null ? metricNote : ''"
         />
         <KpiCard
           :label="t('kpi.burnoutRisk')"
           :description="t('dashboardHelp.burnout')"
-          :value="`${data.kpis.burnoutRisk.percentage}%`"
-          :sublabel="`${data.kpis.burnoutRisk.departmentsAtRisk} ${t('kpi.departmentsToWatch')}`"
+          :value="metricValue(data.kpis.burnoutRisk.percentage, '%')"
+          :sublabel="
+            data.kpis.burnoutRisk.departmentsAtRisk === null
+              ? metricNote
+              : `${data.kpis.burnoutRisk.departmentsAtRisk} ${t('kpi.departmentsToWatch')}`
+          "
         />
         <KpiCard
           :label="t('kpi.responseRate')"
           :description="t('dashboardHelp.responseRate')"
-          :value="`${data.kpis.responseRate.percentage}%`"
-          :sublabel="`${data.kpis.responseRate.responded}/${data.kpis.responseRate.total}`"
+          :value="metricValue(data.kpis.responseRate.percentage, '%')"
+          :sublabel="data.kpis.dataState === 'suppressed' ? metricNote : responseCountLabel"
         />
       </div>
 
@@ -328,7 +445,14 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
             {{ t('trend.title') }}<span v-if="isFiltered"> · {{ selectedDepartmentName }}</span>
             <InfoTooltip
               :label="t('trend.title')"
-              :text="[t(trendForecast ? 'trend.methodNote' : 'trend.insufficientForecast'), selectedTrendMetric === 'responseRate' ? t('trend.responseRateNote') : ''].filter(Boolean).join('\n\n')"
+              :text="
+                [
+                  t(trendForecast ? 'trend.methodNote' : 'trend.insufficientForecast'),
+                  selectedTrendMetric === 'responseRate' ? t('trend.responseRateNote') : '',
+                ]
+                  .filter(Boolean)
+                  .join('\n\n')
+              "
             />
           </h2>
           <div class="trend-metrics" role="group" :aria-label="t('trend.selectMetric')">
@@ -361,36 +485,58 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         <section class="panel department-summary-panel">
           <h2>
             {{ t('departmentScores.title') }}
-            <InfoTooltip :label="t('departmentScores.title')" :text="[t('departmentScores.headcountNote'), t('departmentScores.methodNote')].join('\n\n')" />
+            <InfoTooltip
+              :label="t('departmentScores.title')"
+              :text="
+                [t('departmentScores.headcountNote'), t('departmentScores.methodNote')].join('\n\n')
+              "
+            />
           </h2>
           <DepartmentSummaryTable v-if="data.departmentSummary" :rows="departmentSummaryRows" />
           <p v-else class="wordcloud-error">{{ t('common.loadError') }}</p>
         </section>
         <section class="panel alerts-panel">
-          <DashboardAlerts :alerts="data.alerts" :departments="data.heatmap.rows.map((row) => row.department)" />
+          <DashboardAlerts
+            :alerts="data.alerts"
+            :departments="data.heatmap.rows.map((row) => row.department)"
+          />
         </section>
       </div>
 
       <section class="panel heatmap-panel">
         <h2>
           {{ t('heatmap.title') }}
-          <InfoTooltip :label="t('heatmap.title')" :text="[t('dashboardHelp.heatmap'), t('heatmap.filterScope')].join('\n\n')" />
+          <InfoTooltip
+            :label="t('heatmap.title')"
+            :text="[t('dashboardHelp.heatmap'), t('heatmap.filterScope')].join('\n\n')"
+          />
         </h2>
-        <HeatmapGrid v-if="heatmapTopics.length" :topics="heatmapTopics" :rows="displayedHeatmapRows" compact @cell-click="goToTopic" />
+        <HeatmapGrid
+          v-if="heatmapTopics.length"
+          :topics="heatmapTopics"
+          :rows="displayedHeatmapRows"
+          compact
+          @cell-click="goToTopic"
+        />
         <p v-else class="heatmap-scope">{{ t('heatmap.noVisibleTopics') }}</p>
       </section>
 
       <section v-if="data.extraQuestions.length > 0" class="panel">
         <h2>
           {{ t('periods.extraQuestions.resultsTitle') }}
-          <InfoTooltip :label="t('periods.extraQuestions.resultsTitle')" :text="t('dashboardHelp.extraQuestions')" />
+          <InfoTooltip
+            :label="t('periods.extraQuestions.resultsTitle')"
+            :text="t('dashboardHelp.extraQuestions')"
+          />
         </h2>
         <ul class="extra-question-results">
           <li v-for="q in data.extraQuestions" :key="q.key">
             <span class="eq-label">{{ locale === 'th' ? q.label.th : q.label.en }}</span>
             <span class="eq-value">
               {{ q.average }}{{ q.type === 'enps_0_10' ? '/10' : '/5' }}
-              <span class="eq-count">({{ q.respondentCount }} {{ t('drilldown.respondents') }})</span>
+              <span class="eq-count"
+                >({{ q.respondentCount }} {{ t('drilldown.respondents') }})</span
+              >
             </span>
           </li>
         </ul>
@@ -407,7 +553,10 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         <section class="panel wordcloud-panel">
           <h2>
             {{ t('kpi.sentimentDistribution') }}
-            <InfoTooltip :label="t('kpi.sentimentDistribution')" :text="t('dashboardHelp.sentiment')" />
+            <InfoTooltip
+              :label="t('kpi.sentimentDistribution')"
+              :text="t('dashboardHelp.sentiment')"
+            />
           </h2>
           <SentimentBar :sentiment="data.kpis.sentiment" />
           <hr class="rule" />
@@ -467,8 +616,14 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
   margin-bottom: var(--space-3);
 }
 
-.trend-heading h2 { margin: 0; }
-.trend-metrics { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.trend-heading h2 {
+  margin: 0;
+}
+.trend-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
 .trend-metric {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -479,9 +634,19 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
   font-size: var(--font-size-sm);
   cursor: pointer;
 }
-.trend-metric:hover { border-color: var(--color-primary); color: var(--color-primary); }
-.trend-metric.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
-.trend-metric:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.trend-metric:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.trend-metric.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+.trend-metric:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 .heatmap-scope {
   margin: 0 0 var(--space-3);
@@ -497,7 +662,10 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
 }
 
 .heatmap-panel,
-.alerts-panel { min-width: 0; height: 100%; }
+.alerts-panel {
+  min-width: 0;
+  height: 100%;
+}
 
 .wordcloud-error {
   color: var(--color-text-muted);
@@ -511,10 +679,18 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
   align-items: stretch;
 }
 
-.department-summary-panel { min-width: 0; }
-.insight-unavailable { min-width: 0; }
-.wordcloud-panel { min-width: 0; }
-.wordcloud-panel .rule { margin: var(--space-5) 0; }
+.department-summary-panel {
+  min-width: 0;
+}
+.insight-unavailable {
+  min-width: 0;
+}
+.wordcloud-panel {
+  min-width: 0;
+}
+.wordcloud-panel .rule {
+  margin: var(--space-5) 0;
+}
 
 .extra-question-results {
   list-style: none;
@@ -558,8 +734,12 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
   .kpi-row {
     grid-template-columns: repeat(3, 1fr);
   }
-  .department-alerts-grid { grid-template-columns: 1fr; }
-  .insight-sentiment-grid { grid-template-columns: 1fr; }
+  .department-alerts-grid {
+    grid-template-columns: 1fr;
+  }
+  .insight-sentiment-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {

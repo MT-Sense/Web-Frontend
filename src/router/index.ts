@@ -8,10 +8,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: () => {
-        const auth = useAuthStore()
-        return auth.isAuthenticated ? auth.homeRouteFor(auth.currentRole as Role) : '/login'
-      },
+      name: 'landing',
+      component: () => import('@/views/LandingView.vue'),
     },
     {
       path: '/login',
@@ -106,7 +104,9 @@ const router = createRouter({
       meta: { roles: ['admin'] as Role[] },
       beforeEnter: () => {
         const auth = useAuthStore()
-        return auth.currentUser?.email?.trim().toLowerCase() === 'test@kmitl.ac.th' ? true : '/dashboard'
+        return auth.currentUser?.email?.trim().toLowerCase() === 'test@kmitl.ac.th'
+          ? true
+          : '/dashboard'
       },
     },
     {

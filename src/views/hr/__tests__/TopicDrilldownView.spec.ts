@@ -14,6 +14,7 @@ vi.mock('@/api/dashboard', () => ({
   topics: vi.fn<typeof dashboard.topics>(),
   heatmap: vi.fn<typeof dashboard.heatmap>(),
   topicDrilldown: vi.fn<typeof dashboard.topicDrilldown>(),
+  generateTopicSummary: vi.fn<typeof dashboard.generateTopicSummary>(),
 }))
 vi.mock('@/api/periods', () => ({ list: vi.fn<typeof periods.list>() }))
 vi.mock('@/api/departments', () => ({ list: vi.fn<typeof departments.list>() }))
@@ -134,6 +135,7 @@ const filters = () => wrapper!.findAll('.filters select')
 it('opens the sidebar entry as a topic chooser and requests an explicitly selected round', async () => {
   const view = await open('/dashboard/topics')
   expect(dashboard.topicDrilldown).not.toHaveBeenCalled()
+  expect(dashboard.generateTopicSummary).not.toHaveBeenCalled()
   expect(view.get('.empty-state').text()).toContain(i18n.global.t('drilldown.chooseTopic'))
   expect(view.text()).not.toContain('Redacted employee comment')
   await filters()[0]!.setValue('nov')

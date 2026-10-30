@@ -25,7 +25,12 @@ const emailDialogOpen = ref(false)
 
 const { data: topicList } = useAsyncData(() => dashboardApi.topics())
 const { data: departmentList } = useAsyncData(() => dashboardApi.departments())
-const { data: executiveHealth, loading, error, reload } = useAsyncData(() => dashboardApi.executiveSummary())
+const {
+  data: executiveHealth,
+  loading,
+  error,
+  reload,
+} = useAsyncData(() => dashboardApi.executiveSummary())
 
 const radarAxes = computed(() =>
   (executiveHealth.value?.radar ?? []).map((r) => {
@@ -60,7 +65,12 @@ function exportCsv() {
       headers: [t('export.metric'), t('export.value')],
       rows: [
         [t('executive.orgHealth'), health.score],
-        [t('export.sentiment'), `${health.sentiment.positive}% / ${health.sentiment.neutral}% / ${health.sentiment.negative}%`],
+        [
+          t('export.sentiment'),
+          health.sentiment === null
+            ? hidden
+            : `${health.sentiment.positive}% / ${health.sentiment.neutral}% / ${health.sentiment.negative}%`,
+        ],
       ],
     },
     {
@@ -71,7 +81,10 @@ function exportCsv() {
     {
       title: t('export.departmentsTitle'),
       headers: [t('departmentScores.department'), t('departmentScores.average')],
-      rows: departmentBarData.value.map((row) => [row.label, row.value.suppressed ? hidden : row.value.data]),
+      rows: departmentBarData.value.map((row) => [
+        row.label,
+        row.value.suppressed ? hidden : row.value.data,
+      ]),
     },
     {
       title: t('export.positionsTitle'),
@@ -126,7 +139,8 @@ const positionBarData = computed(() =>
           <InfoTooltip :label="t('executive.orgHealth')" :text="t('dashboardHelp.health')" />
         </h2>
         <div class="health-body">
-          <span class="score">{{ executiveHealth.score }}/100</span>
+          <span v-if="executiveHealth.score === null">{{ t('metrics.insufficient') }}</span>
+          <span v-else class="score">{{ executiveHealth.score }}/100</span>
           <SentimentBar :sentiment="executiveHealth.sentiment" />
         </div>
       </section>
@@ -139,8 +153,12 @@ const positionBarData = computed(() =>
         <div class="radar-wrap">
           <RadarChart :axes="radarAxes" />
           <div class="legend">
-            <span class="legend-item"><span class="swatch swatch-this" />{{ t('executive.thisMonth') }}</span>
-            <span class="legend-item"><span class="swatch swatch-last" />{{ t('executive.lastMonth') }}</span>
+            <span class="legend-item"
+              ><span class="swatch swatch-this" />{{ t('executive.thisMonth') }}</span
+            >
+            <span class="legend-item"
+              ><span class="swatch swatch-last" />{{ t('executive.lastMonth') }}</span
+            >
           </div>
         </div>
       </section>
@@ -149,14 +167,20 @@ const positionBarData = computed(() =>
         <section class="panel">
           <h2>
             {{ t('executive.departmentScores') }}
-            <InfoTooltip :label="t('executive.departmentScores')" :text="t('dashboardHelp.comparison')" />
+            <InfoTooltip
+              :label="t('executive.departmentScores')"
+              :text="t('dashboardHelp.comparison')"
+            />
           </h2>
           <HorizontalBarChart :data="departmentBarData" :show-values="false" />
         </section>
         <section class="panel">
           <h2>
             {{ t('executive.positionScores') }}
-            <InfoTooltip :label="t('executive.positionScores')" :text="t('dashboardHelp.comparison')" />
+            <InfoTooltip
+              :label="t('executive.positionScores')"
+              :text="t('dashboardHelp.comparison')"
+            />
           </h2>
           <HorizontalBarChart :data="positionBarData" :show-values="true" :max="5" />
         </section>

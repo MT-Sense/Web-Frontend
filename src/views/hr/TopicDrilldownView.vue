@@ -10,6 +10,7 @@ import InfoTooltip from '@/components/common/InfoTooltip.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
+import TopicSummaryPanel from '@/components/dashboard/TopicSummaryPanel.vue'
 import TrendLineChart from '@/components/charts/TrendLineChart.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import * as dashboardApi from '@/api/dashboard'
@@ -479,6 +480,7 @@ function exportCsv() {
           <p v-else class="hint">{{ t('drilldown.noQuotes') }}</p>
         </section>
       </div>
+      <TopicSummaryPanel :key="selectionKey" :source="drilldown" />
       <section class="panel follow-up">
         <div>
           <h2 class="panel-title">{{ t('drilldown.actionsTitle') }}</h2>

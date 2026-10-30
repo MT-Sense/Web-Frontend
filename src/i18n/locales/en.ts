@@ -1,4 +1,90 @@
 export default {
+  metrics: {
+    insufficient: 'Not enough data to display',
+    noResponses: 'No responses in this period',
+    unavailable: 'Data unavailable',
+    noComparison: 'No previous period with enough data to compare',
+    noDenominator: 'No account baseline available to calculate a response rate',
+    delta: '{value} vs previous period',
+  },
+  landing: {
+    skip: 'Skip to main content',
+    navigation: 'About MT-Sense',
+    featuresNav: 'Features',
+    howNav: 'Get started',
+    privacyNav: 'Privacy',
+    language: 'Switch language to Thai',
+    login: 'Sign in',
+    openApp: 'Open workspace',
+    createOrg: 'Create a workspace',
+    joinOrg: 'Join an organization',
+    eyebrow: 'A listening space for a better workplace',
+    heroTitle: 'Listen to every voice.',
+    heroAccent: 'Understand your team.',
+    heroDescription:
+      'Turn employee feedback into a clearer picture. Help HR identify what needs attention and plan workplace improvements informed by the team.',
+    discover: 'Explore MT-Sense',
+    invited: 'Already have an invitation code?',
+    assurance: 'Designed with respondent privacy in mind',
+    overviewAlt:
+      'Illustration of MT-Sense: collect employee feedback, analyze topics and team insights, and use findings to plan improvements, subject to privacy thresholds.',
+    illustration: 'Product illustration',
+    overviewEyebrow: 'From team feedback to understanding',
+    overviewTitle: 'See what needs attention',
+    signalVoice: 'Employee voices',
+    signalVoiceDetail: 'Ratings and comments',
+    signalTeam: 'Team insights',
+    signalTeamDetail: 'By survey period and department',
+    insightTitle: 'Understand beyond the numbers',
+    insightDescription: 'Explore topics and sentiment trends to choose what to investigate next.',
+    topicWork: 'Workload',
+    topicGrowth: 'Skill development',
+    topicBenefits: 'Benefits',
+    overviewPrivacy: 'Results subject to privacy thresholds',
+    noteTitle: 'Insights start a conversation',
+    noteDescription: 'HR reviews and makes the decisions',
+    featuresEyebrow: 'Listen · Understand · Improve',
+    featuresTitle: 'Connect feedback with thoughtful action',
+    featuresDescription:
+      'Bring surveys and analysis together, with information appropriate to each role.',
+    listenTitle: 'Give your team a space to speak',
+    listenDescription:
+      'Collect satisfaction ratings and comments through survey periods, keeping account information separate from response content.',
+    understandTitle: 'See the big picture, explore the details',
+    understandDescription:
+      'Explore satisfaction, sentiment, and topics across periods or departments to identify issues worth following up.',
+    actTitle: 'Turn understanding into team support',
+    actDescription:
+      'Use AI to help summarize topics and prepare proposals for HR review, then choose an approach and track the work.',
+    workflowTitle: 'Start by listening, one survey at a time',
+    workflowDescription:
+      'Create a workspace, invite your team, and use survey insights to inform your next steps together.',
+    step1Title: 'Set up your organization',
+    step1Description:
+      'Create an organization, manage departments, and share an invitation code with employees.',
+    step2Title: 'Open a survey and listen',
+    step2Description:
+      'Employees submit a satisfaction rating and a comment during an open survey period.',
+    step3Title: 'Explore insights and choose improvements',
+    step3Description:
+      'HR explores trends, investigates topics, and reviews proposals. Executives see summaries appropriate to their role.',
+    privacyTitle: 'Trust starts with how information is handled',
+    privacyDescription:
+      'Thoughtful listening puts respondents first, from storing responses to deciding which information is displayed.',
+    separateTitle: 'Separate accounts from response content',
+    separateDescription:
+      'Submission tracking is kept separate from the survey responses themselves.',
+    thresholdTitle: 'Require enough respondents to show results',
+    thresholdDescription:
+      'Analysis for groups with fewer than 5 respondents is hidden to reduce the risk of identifying individuals.',
+    accessTitle: 'Limit access by role',
+    accessDescription:
+      'Executives see aggregate insights, without raw comments. Comment content may still contain context that could identify someone.',
+    closingTitle: 'Understand your workplace through your team',
+    closingDescription:
+      'Create a workspace for your organization or join with your invitation code.',
+    footer: 'Listen with care. Improve with understanding.',
+  },
   app: {
     name: 'MT-Sense',
   },
@@ -60,7 +146,8 @@ export default {
     submitting: 'Creating company…',
     genericError: 'Could not create the company, please try again',
     joinCodeRevealTitle: "Your company's join code",
-    joinCodeRevealBody: 'Share this code with employees. They will select their department during sign-up.',
+    joinCodeRevealBody:
+      'Share this code with employees. They will select their department during sign-up.',
     copyCode: 'Copy code',
     copied: 'Copied',
     continue: 'Manage departments',
@@ -127,7 +214,8 @@ export default {
   },
   modelTraining: {
     title: 'Train sentiment model',
-    description: 'Select an Excel file with feedback and Sentiment columns. The model is evaluated before the new version becomes active.',
+    description:
+      'Select an Excel file with feedback and Sentiment columns. The model is evaluated before the new version becomes active.',
     fileLabel: 'Training workbook (.xlsx)',
     fileHint: 'Accepts .xlsx files up to 10 MB',
     invalidFile: 'Select an .xlsx file',
@@ -168,9 +256,12 @@ export default {
     expandSidebar: 'Expand sidebar',
   },
   privacy: {
-    filtersActive: 'All data is anonymous · groups with <5 respondents are not shown (n<5 not shown)',
-    executiveRule: 'Executives see aggregate only · no raw individual text · no filter below 5 respondents',
-    formBuilder: 'No user ID stored with answers · groups with n<5 are not shown · no identifying questions allowed',
+    filtersActive:
+      'All data is anonymous · groups with <5 respondents are not shown (n<5 not shown)',
+    executiveRule:
+      'Executives see aggregate only · no raw individual text · no filter below 5 respondents',
+    formBuilder:
+      'No user ID stored with answers · groups with n<5 are not shown · no identifying questions allowed',
     surveyStep: 'Your answers are never linked to your name or email · HR only sees aggregates',
     suppressed: 'Not enough data to display results',
     myPrivacyTitle: 'My privacy',
@@ -188,26 +279,39 @@ export default {
   dashboardHelp: {
     enps: 'Derived from satisfaction scores: % scoring 4-5 minus % scoring 1-2. This KPI does not yet use the optional 0-10 recommendation question.',
     satisfaction: 'Average satisfaction score from 1 to 5 for the selected survey round.',
-    burnout: 'Percentage of responses scoring 1-2. This is a low-score signal, not a validated burnout assessment.',
-    responseRate: 'Responses divided by the current number of active accounts. Imports and changes to account numbers can affect this rate.',
-    sentiment: 'Positive, neutral and negative shares among comments with a completed AI analysis. Responses without an analysis are excluded.',
-    heatmap: 'Average overall satisfaction of responses whose comments mention each topic, not a direct rating of that topic. Cells need at least 5 responses.',
-    terms: 'Each term counts at most once per response, must appear in at least 5 responses, and is shown among the top 30 terms.',
-    extraQuestions: 'Average answers and response counts for the optional questions enabled in this round. Scales are 1-5 or 0-10 as labelled.',
-    insight: 'Uses analyzed responses and a Knowledge Base summary when available. Confidence levels reflect sample size; topic percentages reflect mention share, not model confidence.',
-    alerts: 'Signals from low scores, low response rates or changes in sentiment that help HR decide what to investigate.',
-    health: 'Overall Health = 70% × (average satisfaction ÷ 5 × 100) + 30% × (50 + (positive% − negative%) ÷ 2). These weights are project-defined.',
-    radar: 'Compares the six main topics with the previous round using overall satisfaction of responses tagged with each topic. Missing data may currently appear as 0.',
-    comparison: 'Average satisfaction by group. Groups with fewer than 5 responses are not shown or omitted.',
+    burnout:
+      'Percentage of responses scoring 1-2. This is a low-score signal, not a validated burnout assessment.',
+    responseRate:
+      'Responses divided by the active account count captured when the round was created, by organization and department. Current membership is never used. Rates are unavailable for legacy rounds, imports, or response counts exceeding the baseline.',
+    sentiment:
+      'Positive, neutral and negative shares among comments with a completed AI analysis. Responses without an analysis are excluded.',
+    heatmap:
+      'Average overall satisfaction of responses whose comments mention each topic, not a direct rating of that topic. Cells need at least 5 responses.',
+    terms:
+      'Each term counts at most once per response, must appear in at least 5 responses, and is shown among the top 30 terms.',
+    extraQuestions:
+      'Average answers and response counts for the optional questions enabled in this round. Scales are 1-5 or 0-10 as labelled.',
+    insight:
+      'Uses analyzed responses and a Knowledge Base summary when available. Confidence levels reflect sample size; topic percentages reflect mention share, not model confidence.',
+    alerts:
+      'Signals from low scores, low response rates or changes in sentiment that help HR decide what to investigate.',
+    health:
+      'Overall Health = 70% × (average satisfaction ÷ 5 × 100) + 30% × (50 + (positive% − negative%) ÷ 2). These weights are project-defined.',
+    radar:
+      'Compare the six core topics with the previous period, using overall satisfaction scores of responses tagged with each topic. Each topic in each period needs at least 5 responses. Missing or suppressed values are left blank.',
+    comparison:
+      'Average satisfaction by group. Groups with fewer than 5 responses are not shown or omitted.',
   },
   trend: {
     title: 'Trends by survey round',
     selectMetric: 'Choose a chart metric',
     empty: 'No survey responses are available for the trend yet',
     forecast: 'Forecast',
-    methodNote: 'The next round is estimated from the change between the last two rounds and limited to the metric range.',
+    methodNote:
+      'The next round is estimated from the change between the last two rounds and limited to the metric range.',
     insufficientForecast: 'At least two rounds with responses are needed to show a forecast.',
-    responseRateNote: 'Each round uses the current number of active accounts as its denominator.',
+    responseRateNote:
+      'Each period uses its own account-count snapshot at creation. Rates are unavailable when the snapshot is missing or the period contains imported responses.',
   },
   insight: {
     title: 'AI Insight',
@@ -230,21 +334,24 @@ export default {
     answer: 'Answer',
     sources: 'Source periods',
     noSources: 'No source period could be directly confirmed for this answer.',
-    guardNote: 'Answers use Knowledge Base evidence only, never raw comments, and groups with fewer than 5 respondents remain not shown.',
+    guardNote:
+      'Answers use Knowledge Base evidence only, never raw comments, and groups with fewer than 5 respondents remain not shown.',
     guardShort: 'Answers use Knowledge Base evidence that passed the n≥5 rule.',
     failed: 'Could not answer the question',
     status: 'Ready to analyze',
     open: 'Open MT-Sense chat',
     close: 'Close MT-Sense chat',
     welcomeTitle: 'Hi - what would you like MT-Sense to analyze?',
-    welcomeBody: 'Ask about trends, scores, topics, or departments from survey periods with enough evidence.',
+    welcomeBody:
+      'Ask about trends, scores, topics, or departments from survey periods with enough evidence.',
     example1: 'What is the latest average satisfaction score?',
     example2: 'How has workload changed across recent periods?',
   },
   heatmap: {
     title: 'Department × Topic Heatmap',
     unassigned: 'No department specified',
-    filterScope: 'The department selector filters the trend chart, heatmap, and department scores. Other cards show the whole company.',
+    filterScope:
+      'The department selector filters the trend chart, heatmap, and department scores. Other cards show the whole company.',
     noVisibleTopics: 'No topic has enough responses to display for this department yet.',
   },
   departmentScores: {
@@ -262,8 +369,10 @@ export default {
     },
     noResponses: 'No responses',
     empty: 'No department data for this selection',
-    headcountNote: 'Total means active accounts currently in the department. Groups with 1 - 4 responses have their counts and scores not shown.',
-    methodNote: 'Estimate = current score + change from last month, limited to 1 - 5. Shown only when both months have at least 5 responses. Status: Good ≥4, Watch 3 - 3.9, At risk <3.',
+    headcountNote:
+      'Account counts are snapshots taken at round creation, not current membership. Legacy rounds or imports without a verified baseline display —.',
+    methodNote:
+      'Estimate = current score + change from last month, limited to 1 - 5. Shown only when both months have at least 5 responses. Status: Good ≥4, Watch 3 - 3.9, At risk <3.',
   },
   wordcloud: {
     title: 'Frequently mentioned terms',
@@ -304,7 +413,8 @@ export default {
     actionTarget: 'target {date}',
     noActions: 'Nothing is being worked on yet',
     noSummaries: 'HR has not published a summary yet',
-    empty: 'No published comments yet. Comments appear here once their author agrees to share them and HR has reviewed them.',
+    empty:
+      'No published comments yet. Comments appear here once their author agrees to share them and HR has reviewed them.',
     upvote: 'Upvote',
     downvote: 'Downvote',
     undoVote: 'Click again to remove your vote',
@@ -318,7 +428,8 @@ export default {
     alreadySubmitted: "You've already submitted this period's survey",
     satisfactionQuestion: 'How satisfied are you with your work experience this month?',
     commentLabel: 'Anything else you would like to share?',
-    openTextPlaceholder: 'AI will summarize this into themes - raw text is never shown to executives.',
+    openTextPlaceholder:
+      'AI will summarize this into themes - raw text is never shown to executives.',
     optInPublish: 'Allow this comment to be published in the employee feed',
     addTag: 'Add tag',
     thankYouTitle: 'Thank you for your feedback',
@@ -328,6 +439,39 @@ export default {
     submitFailed: 'Submission failed, please try again',
   },
   drilldown: {
+    aiSummary: {
+      providerRequest:
+        'The AI service could not accept this request. Please retry or contact your administrator.',
+      providerAuth: 'The AI service cannot be accessed. Please contact your administrator.',
+      modelUnavailable: 'The summary model is unavailable. Please contact your administrator.',
+      providerQuota:
+        'The AI service has reached a usage limit. Try later or contact your administrator.',
+      timeout: 'The AI request timed out. Please try again.',
+      invalidResponse:
+        'The AI response did not match the required format. Please regenerate the summary.',
+      invalidEvidence:
+        'The cited evidence did not pass validation, so this summary is not shown. Please try again.',
+      title: 'Key points from comments',
+      generate: 'Generate AI summary',
+      regenerate: 'Regenerate summary',
+      loading: 'Summarizing comments…',
+      help: 'Up to 3 themes for the selected topic, survey round and department. Each theme must cite real excerpts from at least 5 distinct responses. No prewritten sample findings.',
+      consent:
+        'Generating a summary sends the topic name and up to 120 redacted comments from this selection to Google Gemini. Employee account details and database response IDs are not sent.',
+      coverage: 'Based on {count} recent usable comments (up to 120)',
+      support: 'Supported by citations from {count} responses in this sample',
+      evidence: 'View sample evidence',
+      review:
+        'AI summaries may be inaccurate. Review the evidence before making decisions. Citation counts are not the total number of people mentioning a theme.',
+      idle: 'Generate a summary when needed. Opening this page does not automatically send comments for summarization.',
+      empty:
+        'No recurring themes met the evidence threshold for display. This does not mean there are no issues to follow up.',
+      insufficient:
+        'Not enough usable comments to summarize. Each theme requires evidence from at least 5 distinct responses.',
+      rateLimited: 'Too many summary requests. Wait a moment and try again.',
+      failed:
+        'The summary could not be generated or the AI service is unavailable. Please try again.',
+    },
     title: 'Topic analysis',
     round: 'Survey round',
     topic: 'Topic',
@@ -346,31 +490,42 @@ export default {
     subIssues: 'Sub-issues',
     sampleQuotes: 'Sample comments',
     addAction: 'Add follow-up',
-    pageHelp: 'Select a topic, survey round and department to view scores and comments within the same scope. The organization average is provided for comparison.',
+    pageHelp:
+      'Select a topic, survey round and department to view scores and comments within the same scope. The organization average is provided for comparison.',
     backDashboard: 'Back to Dashboard',
     chooseTopic: 'Choose a topic to analyze',
     selectedTopic: 'Selected topic',
-    selectionHelp: 'Choose a survey round, topic and department, or select a cell in the Dashboard heatmap.',
+    selectionHelp:
+      'Choose a survey round, topic and department, or select a cell in the Dashboard heatmap.',
     unknownDepartment: 'Selected department unavailable',
     notFound: 'Selection not found',
     unavailableHelp: 'Try changing the survey round, topic or department above.',
     pendingHelp: 'Some comments are still being analyzed. Check again later.',
-    privacyHelp: 'Results are shown only when at least 5 people have responded in this group to protect respondent anonymity.',
+    privacyHelp:
+      'Results are shown only when at least 5 people have responded in this group to protect respondent anonymity.',
     noPeriodsHelp: 'Analysis will be available once a survey round has analyzed responses.',
     topicOptionsError: 'Additional topics could not be loaded.',
-    scoreHelp: 'Average overall satisfaction score of responses mentioning this topic in the selected round and department. Respondents did not score the topic directly.',
-    averageHelp: 'Average satisfaction score of all responses across the organization in the same round, without topic or department filtering.',
-    responseHelp: 'Responses assigned to this topic by AI in the selected round and department. One response can mention multiple topics.',
-    shareHelp: 'Responses mentioning this topic divided by all responses in the selected round and department. The denominator includes responses awaiting analysis.',
+    scoreHelp:
+      'Average overall satisfaction score of responses mentioning this topic in the selected round and department. Respondents did not score the topic directly.',
+    averageHelp:
+      'Average satisfaction score of all responses across the organization in the same round, without topic or department filtering.',
+    responseHelp:
+      'Responses assigned to this topic by AI in the selected round and department. One response can mention multiple topics.',
+    shareHelp:
+      'Responses mentioning this topic divided by all responses in the selected round and department. The denominator includes responses awaiting analysis.',
     scopeResponses: 'All responses in the selected scope',
     outOfResponses: 'Out of {count} responses',
-    trendHelp: 'Six calendar months ending with the selected round, using the same topic and department throughout. Months with no data or too few respondents are left blank rather than shown as zero.',
+    trendHelp:
+      'Six calendar months ending with the selected round, using the same topic and department throughout. Months with no data or too few respondents are left blank rather than shown as zero.',
     noTrend: 'Not enough data to display a trend.',
     sentimentTitle: 'Sentiment of comments mentioning this topic',
-    sentimentHelp: 'Sentiment distribution of comments mentioning this topic in the selected round and department. Labels describe each whole comment.',
-    quotesHelp: 'Up to 3 comments from the selected topic, round and department. Personal information has been redacted. Comments are excluded from exports.',
+    sentimentHelp:
+      'Sentiment distribution of comments mentioning this topic in the selected round and department. Labels describe each whole comment.',
+    quotesHelp:
+      'Up to 3 comments from the selected topic, round and department. Personal information has been redacted. Comments are excluded from exports.',
     actionsTitle: 'Follow-ups for this topic',
-    actionsHelp: 'View and manage follow-ups for this topic across all survey rounds and departments.',
+    actionsHelp:
+      'View and manage follow-ups for this topic across all survey rounds and departments.',
     viewActions: 'View follow-ups',
   },
   pagination: {
@@ -398,8 +553,10 @@ export default {
     import: {
       title: 'Import responses from Excel',
       chooseFile: 'Import Excel',
-      format: 'First sheet in .xlsx: A Department, B Position, C Score (1 - 5), D Comment · up to 250 rows/5 MB · Position is not used yet',
-      anonymousNote: 'Imported responses are not linked to employee accounts or marked as submitted. If responses exceed active accounts, the dashboard response rate may not reflect the eligible population.',
+      format:
+        'First sheet in .xlsx: A Department, B Position, C Score (1 - 5), D Comment · up to 250 rows/5 MB · Position is not used yet',
+      anonymousNote:
+        'Imported responses are not linked to employee accounts or marked as submitted. If responses exceed active accounts, the dashboard response rate may not reflect the eligible population.',
       invalidFile: 'Choose an .xlsx file no larger than 5 MB',
       checking: 'Checking workbook structure and departments…',
       ready: '{count} rows passed validation. Review department counts before importing.',
@@ -473,19 +630,22 @@ export default {
       pending: 'Awaiting review',
       active: 'In progress',
       rules: 'Routing rules',
-      listHelp: 'Browse all proposals by page and status. The period and department above apply to preparing new proposals. Open details to review evidence and take action.',
+      listHelp:
+        'Browse all proposals by page and status. The period and department above apply to preparing new proposals. Open details to review evidence and take action.',
     },
     breadcrumb: 'HR assistant',
     title: 'HR proposals',
     flow: 'Review evidence → Prepare a plan → HR approval → Execute',
     settingsLink: 'Tools and connections settings',
-    description: 'Select a survey scope to prepare proposals. Positive-only or insufficient evidence may produce no new proposals.',
+    description:
+      'Select a survey scope to prepare proposals. Positive-only or insufficient evidence may produce no new proposals.',
     period: 'Survey period',
     department: 'Department',
     companyWide: 'Company-wide',
     analyze: 'Analyze and prepare proposals',
     working: 'Working…',
-    privacyNote: 'Uses redacted feedback and data from the connected tool. One proposal per playbook/period/scope. Runs on demand; no scheduler yet.',
+    privacyNote:
+      'Uses redacted feedback and data from the connected tool. One proposal per playbook/period/scope. Runs on demand; no scheduler yet.',
     reload: 'Reload',
     statusLabel: 'Status',
     allStatuses: 'All statuses',
@@ -501,7 +661,8 @@ export default {
     localTask: 'Internal HR task',
     jiraTask: 'Create a Jira task',
     issueType: 'Issue type',
-    jiraPrivacyHint: 'This title and body will be sent to Jira after approval. Check that they contain no private survey feedback.',
+    jiraPrivacyHint:
+      'This title and body will be sent to Jira after approval. Check that they contain no private survey feedback.',
     saveDraft: 'Save draft',
     cancel: 'Cancel',
     plannedAction: 'Planned action',
@@ -513,15 +674,19 @@ export default {
     complete: 'Record outcome and complete',
     history: 'Review and action history',
     confirmAction: 'Confirm action',
-    approveJiraConfirm: 'Approve this exact version and destination. This step does not send data to Jira. A task is created only after clicking “Create Jira task”.',
-    approveLocalConfirm: 'Approve this version as an internal HR follow-up. Work starts only after clicking “Start internal task”.',
-    executeJiraConfirm: 'Send the approved title and body to create a Jira task at the displayed destination.',
+    approveJiraConfirm:
+      'Approve this exact version and destination. This step does not send data to Jira. A task is created only after clicking “Create Jira task”.',
+    approveLocalConfirm:
+      'Approve this version as an internal HR follow-up. Work starts only after clicking “Start internal task”.',
+    executeJiraConfirm:
+      'Send the approved title and body to create a Jira task at the displayed destination.',
     executeLocalConfirm: 'Start this approved proposal as an internal HR task.',
     withdrawConfirm: 'Withdraw approval and return to editing. Approval will be required again.',
     rejectConfirm: 'Reject this proposal and retain its history.',
     outcome: 'Outcome',
     confirm: 'Confirm',
-    executingCheck: 'If interrupted, check Jira for label mtsense-{id} before proceeding. This request will not be resent.',
+    executingCheck:
+      'If interrupted, check Jira for label mtsense-{id} before proceeding. This request will not be resent.',
     openJira: 'Open Jira task ↗',
     actor: 'Actor:',
     paginationLabel: 'Proposal pagination',
@@ -540,20 +705,22 @@ export default {
       needs_check: 'Check Jira outcome',
       executed: 'Jira task created',
       in_progress: 'Internal task in progress',
-      completed: 'Completed'
+      completed: 'Completed',
     },
     playbook: {
       workload: 'Workload',
       approvals: 'Approvals',
       training: 'Training',
-      benefits: 'Benefits'
+      benefits: 'Benefits',
     },
   },
   routing: {
     title: 'Triage and routing center',
-    description: 'HR reviews cases and coordinates with owners. Routing is currently an internal record without a recipient inbox or automatic notifications.',
+    description:
+      'HR reviews cases and coordinates with owners. Routing is currently an internal record without a recipient inbox or automatic notifications.',
     rulesSummary: 'Topic → responsible department rules ({count})',
-    rulesHelp: 'A keyword match in the title or summary suggests a route only. It does not classify a complaint. Missing or multiple matches await HR triage, and HR can add a new topic to any case.',
+    rulesHelp:
+      'A keyword match in the title or summary suggests a route only. It does not classify a complaint. Missing or multiple matches await HR triage, and HR can add a new topic to any case.',
     topic: 'Topic',
     topicPlaceholder: 'For example, expense reimbursement',
     keywords: 'Keywords, separated by commas',
@@ -564,7 +731,8 @@ export default {
     addRule: 'Add rule',
     saveRules: 'Save rules',
     openCase: 'Open a case for triage',
-    openCaseHelp: 'Enter an HR-reviewed summary or copy a previous proposal. Do not include respondent names. Opening a case does not approve spending or a resolution.',
+    openCaseHelp:
+      'Enter an HR-reviewed summary or copy a previous proposal. Do not include respondent names. Opening a case does not approve spending or a resolution.',
     copyDraft: 'Copy an existing draft (optional)',
     newCase: 'Enter a new case / topic without a rule',
     caseTitle: 'Case title',
@@ -586,9 +754,11 @@ export default {
     review: 'Review and update case',
     editableTopic: 'Topic (new names allowed)',
     responsibleDepartment: 'Responsible department',
-    confirmRouteHelp: 'Review the summary and owner before confirming. This records routing only; HR must contact the recipient through a company channel.',
+    confirmRouteHelp:
+      'Review the summary and owner before confirming. This records routing only; HR must contact the recipient through a company channel.',
     coordinationNote: 'Reason / coordination outcome',
-    notePlaceholder: 'For example, contacted the department head through an internal channel and awaiting a review meeting',
+    notePlaceholder:
+      'For example, contacted the department head through an internal channel and awaiting a review meeting',
     confirmRoute: 'Confirm routing record',
     acknowledge: 'Record recipient acknowledgement',
     complete: 'Record outcome and close',
@@ -602,7 +772,8 @@ export default {
     next: 'Next',
     pageOf: 'Page {page} of {total}',
     rulesSaved: 'Rules saved',
-    rulesSavedDetail: 'New rules apply to cases created from now on. Existing recipients are unchanged.',
+    rulesSavedDetail:
+      'New rules apply to cases created from now on. Existing recipients are unchanged.',
     caseCreated: 'Case opened',
     caseCreatedDetail: 'Review the topic and recipient before recording the route.',
     updated: 'Saved',
@@ -625,28 +796,35 @@ export default {
     breadcrumb: 'HR assistant settings',
     back: 'Back to main settings',
     title: 'HR assistant settings',
-    intro: 'Configure sources and permitted actions. Every proposal requires HR review before execution.',
+    intro:
+      'Configure sources and permitted actions. Every proposal requires HR review before execution.',
     openProposals: 'Open HR proposals →',
     reload: 'Reload',
     loading: 'Loading…',
     thresholds: 'Proposal thresholds',
     minResponses: 'Minimum responses per topic (at least 5)',
     mentionPercent: 'Topic mention threshold (%)',
-    thresholdHint: 'Topic mentions select candidates; AI checks whether the comments describe an actual concern or need.',
-    aiNotReady: 'Live AI requires matching AUTOMATION_SERVICE_TOKEN values in Backend and AI-Service.',
+    thresholdHint:
+      'Topic mentions select candidates; AI checks whether the comments describe an actual concern or need.',
+    aiNotReady:
+      'Live AI requires matching AUTOMATION_SERVICE_TOKEN values in Backend and AI-Service.',
     tools: 'Tools and connections',
-    toolsHint: 'HR can name the tool and describe its workflow. Manual mode records coordination guidance without calling an API. Automated access requires a supported adapter.',
+    toolsHint:
+      'HR can name the tool and describe its workflow. Manual mode records coordination guidance without calling an API. Automated access requires a supported adapter.',
     toolName: 'Tool or channel name',
     toolPlaceholder: 'For example, an internal system, email, or company tool',
     mode: 'Connection mode',
     manualModeOption: 'Manual - handled by HR',
     jiraModeOption: 'Jira Cloud API (supported adapter)',
     instructions: 'Usage and data-sharing instructions',
-    instructionsPlaceholder: 'For example, send only department-level summaries, never raw comments',
+    instructionsPlaceholder:
+      'For example, send only department-level summaries, never raw comments',
     manualMode: 'Manual mode',
-    manualHint: 'The system records the tool and instructions for HR. It does not request credentials, read data, or create external work automatically.',
+    manualHint:
+      'The system records the tool and instructions for HR. It does not request credentials, read data, or create external work automatically.',
     jiraTitle: 'Jira Cloud API adapter',
-    jiraHint: 'This adapter uses email and an unscoped API token and reads up to 100 currently open issues.',
+    jiraHint:
+      'This adapter uses email and an unscoped API token and reads up to 100 currently open issues.',
     siteUrl: 'Site URL',
     accountEmail: 'Account email',
     apiToken: 'API token',
@@ -658,11 +836,13 @@ export default {
     companyProject: 'Company project key',
     issueType: 'Issue type ID for new tasks',
     mapDepartments: 'Map departments to projects',
-    mapHint: 'Department analysis only uses its mapped project, without falling back to the company project.',
+    mapHint:
+      'Department analysis only uses its mapped project, without falling back to the company project.',
     allowWrite: 'Allow this adapter to create tasks after HR approval',
     testAdapter: 'Save and test connection',
     references: 'Organization reference material',
-    referencesHint: 'Include document titles and effective dates. Avoid personal data; this content is sent to AI as reference material.',
+    referencesHint:
+      'Include document titles and effective dates. Avoid personal data; this content is sent to AI as reference material.',
     trainingCatalog: 'Training catalog and skills guidance',
     approvalPolicy: 'Approval process and SLA',
     benefitsPolicy: 'Benefits policy',
@@ -671,7 +851,8 @@ export default {
     saved: 'Settings saved',
     savedDetail: 'Changed connection settings require existing approvals to be reviewed again.',
     testPassed: 'Connection test passed',
-    cardHint: 'Configure thresholds, tools, connections, and reference material on a separate page.',
+    cardHint:
+      'Configure thresholds, tools, connections, and reference material on a separate page.',
     cardLink: 'Open HR assistant settings →',
   },
   actionItems: {
@@ -708,8 +889,10 @@ export default {
     titleEn: 'Title (English)',
     bodyEn: 'Body (English)',
     englishOptional: 'English (optional; Thai is shown when empty)',
-    bodyPlaceholder: 'e.g. Workload was the most discussed topic this round; we will review how work is distributed this quarter.',
-    privacyHint: 'Write at an aggregate level; avoid details that could identify a respondent or a small department.',
+    bodyPlaceholder:
+      'e.g. Workload was the most discussed topic this round; we will review how work is distributed this quarter.',
+    privacyHint:
+      'Write at an aggregate level; avoid details that could identify a respondent or a small department.',
     publish: 'Publish',
     saveDraft: 'Save draft',
     unpublish: 'Unpublish',
@@ -725,10 +908,12 @@ export default {
   },
   password: {
     forgotTitle: 'Forgot password',
-    forgotHint: 'Enter the email you sign in with and we will send you a link to set a new password.',
+    forgotHint:
+      'Enter the email you sign in with and we will send you a link to set a new password.',
     sendLink: 'Send reset link',
     sending: 'Sending…',
-    forgotSent: 'If {email} has an account, you will receive an email with a link within a few minutes. The link works for 1 hour.',
+    forgotSent:
+      'If {email} has an account, you will receive an email with a link within a few minutes. The link works for 1 hour.',
     forgotError: 'Could not send the request, please try again',
     backToLogin: 'Back to sign in',
     resetTitle: 'Set a new password',
@@ -766,15 +951,18 @@ export default {
     you: 'you',
     empty: 'No users match these filters',
     selfNote: 'You cannot change your own role or deactivate yourself; ask another HR.',
-    departmentNote: 'A department change applies to future answers; past answers stay with the old department.',
-    deactivateHint: 'Deactivated accounts cannot sign in, are signed out everywhere and are not counted in the response rate. Nothing is deleted; you can reactivate.',
+    departmentNote:
+      'A department change applies to future answers; past answers stay with the old department.',
+    deactivateHint:
+      'Deactivated accounts cannot sign in, are signed out everywhere and are not counted in the response rate. Nothing is deleted; you can reactivate.',
     tempPassword: 'Temporary password',
     tempPasswordHint: 'Give this to the person and ask them to change it in Settings.',
     generate: 'Generate password',
     passwordTitle: 'Password',
     setPassword: 'Set temporary password',
     sendReset: 'Email a reset link',
-    passwordHint: 'Either option signs the person out everywhere. The email link works once, for 1 hour.',
+    passwordHint:
+      'Either option signs the person out everywhere. The email link works once, for 1 hour.',
     created: 'User added',
     createdDetail: 'Tell {email} to sign in with the temporary password: {password}',
     saved: 'Saved',
@@ -782,7 +970,8 @@ export default {
     passwordSetDetail: 'Temporary password: {password}',
     resetSent: 'Reset link sent',
     resetSentDetail: 'Sent to {email}',
-    resetLogged: 'SMTP is not configured, so the link was written to the backend log instead of being sent',
+    resetLogged:
+      'SMTP is not configured, so the link was written to the backend log instead of being sent',
     failed: 'Could not save',
   },
   export: {
@@ -813,7 +1002,8 @@ export default {
     manageActionItems: 'Manage action items →',
     linkedTo: 'Linked to',
     pendingTitle: 'Waiting for review',
-    pendingHint: 'Comments employees agreed to share. Identifying details are already redacted and posts are not linked to their author. Once published, everyone in the organization sees them in the colleague feed.',
+    pendingHint:
+      'Comments employees agreed to share. Identifying details are already redacted and posts are not linked to their author. Once published, everyone in the organization sees them in the colleague feed.',
     pendingEmpty: 'No posts waiting for review',
     publish: 'Publish',
     reject: 'Don’t publish',
@@ -825,8 +1015,10 @@ export default {
     addReply: 'Reply',
     editReply: 'Edit reply',
     replyLabel: 'Reply from HR',
-    replyPlaceholder: 'e.g. Thanks for raising this. HR is reviewing it with management and will share progress next month.',
-    replyPublicHint: 'The reply appears under the post for everyone in the organization. It cannot go to the author directly because posts are not linked to who wrote them.',
+    replyPlaceholder:
+      'e.g. Thanks for raising this. HR is reviewing it with management and will share progress next month.',
+    replyPublicHint:
+      'The reply appears under the post for everyone in the organization. It cannot go to the author directly because posts are not linked to who wrote them.',
     saveReply: 'Save reply',
     removeReply: 'Remove reply',
     replySaved: 'Reply saved',
@@ -845,14 +1037,16 @@ export default {
     you: 'you',
     note: 'Message',
     notePlaceholder: 'e.g. Please review before Monday’s meeting',
-    aggregatesOnly: 'The email contains aggregate scores only - no individual comments. Scores are withheld when fewer than 5 people responded.',
+    aggregatesOnly:
+      'The email contains aggregate scores only - no individual comments. Scores are withheld when fewer than 5 people responded.',
     sendTo: 'Send to {count}',
     sending: 'Sending…',
     summaryQueued: 'Queued {count} email(s)',
     summaryQueuedDetail: 'They are usually delivered within a minute.',
     settingsTitle: 'Email (SMTP)',
     configured: 'Sending as {from}',
-    notConfigured: 'SMTP is not configured - emails are written to the server log instead of being sent. Set SMTP_HOST and SMTP_FROM in the backend environment.',
+    notConfigured:
+      'SMTP is not configured - emails are written to the server log instead of being sent. Set SMTP_HOST and SMTP_FROM in the backend environment.',
     queue: 'Waiting in queue: {pending}',
     failedRecently: 'failed in the last 7 days: {failed}',
     sendTest: 'Send a test email to me',

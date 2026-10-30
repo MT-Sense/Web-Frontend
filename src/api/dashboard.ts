@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { Topic, TopicDrilldown } from '@/types/topic'
+import type { Topic, TopicDrilldown, TopicSummary } from '@/types/topic'
 import type { Department } from '@/types/department'
 import type { Position } from '@/types/user'
 import type { HrKpis, ExecutiveHealth } from '@/types/kpi'
@@ -101,6 +101,14 @@ export function topicDrilldown(topicId: string, period?: string, department?: st
   if (department) query.set('department', department)
   const suffix = query.size ? `?${query.toString()}` : ''
   return api.get<TopicDrilldown>(`/api/dashboard/hr/topics/${encodeURIComponent(topicId)}${suffix}`)
+}
+
+export function generateTopicSummary(topicId: string, period: string, department?: string) {
+  const query = new URLSearchParams({ period })
+  if (department) query.set('department', department)
+  return api.post<TopicSummary>(
+    `/api/dashboard/hr/topics/${encodeURIComponent(topicId)}/summary?${query.toString()}`,
+  )
 }
 
 export function executiveSummary(period?: string) {

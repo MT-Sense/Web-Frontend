@@ -18,6 +18,21 @@ export interface TopicSubIssue {
   percentage: number
 }
 
+export interface TopicSummary {
+  topicId: string
+  periodId: string
+  departmentId: string
+  sampledComments: number
+  generatedAt: string
+  model: string
+  themes: {
+    title: LocalizedText
+    summary: LocalizedText
+    supportingCount: number
+    excerpts: string[]
+  }[]
+}
+
 export interface TopicDrilldown {
   periodId: string
   scopeResponseCount: number

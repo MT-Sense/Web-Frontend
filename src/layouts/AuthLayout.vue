@@ -14,7 +14,7 @@ function toggleLocale() {
 <template>
   <div class="auth-layout">
     <header class="header">
-      <span class="app-name">{{ t('app.name') }}</span>
+      <RouterLink to="/" class="app-name">{{ t('app.name') }}</RouterLink>
       <Button variant="secondary" size="sm" @click="toggleLocale">
         <Languages :size="15" aria-hidden="true" />
         {{ locale === 'th' ? 'EN' : 'TH' }}
@@ -49,6 +49,8 @@ function toggleLocale() {
 }
 
 .app-name {
+  color: var(--color-text);
+  text-decoration: none;
   font-weight: 700;
   font-size: var(--font-size-lg);
   letter-spacing: -0.015em;

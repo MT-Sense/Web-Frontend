@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 export interface RadarAxis {
   label: string
-  thisMonth: number
-  lastMonth: number
+  thisMonth: number | null
+  lastMonth: number | null
 }
 
 const props = defineProps<{ axes: RadarAxis[]; max?: number }>()
+const { t } = useI18n()
+const hasValues = computed(() =>
+  props.axes.some((axis) => axis.thisMonth !== null || axis.lastMonth !== null),
+)
 
 const size = 260
 const center = size / 2
@@ -38,16 +43,42 @@ function gridPolygon(levelRatio: number) {
     .join(' ')
 }
 
-const thisMonthPolygon = computed(() =>
-  props.axes.map((a, i) => pointFor(i, a.thisMonth)).map((p) => `${p.x},${p.y}`).join(' '),
-)
-const lastMonthPolygon = computed(() =>
-  props.axes.map((a, i) => pointFor(i, a.lastMonth)).map((p) => `${p.x},${p.y}`).join(' '),
+function seriesPath(key: 'thisMonth' | 'lastMonth') {
+  let drawing = false
+  const path = props.axes
+    .map((axis, index) => {
+      const value = axis[key]
+      if (value === null) {
+        drawing = false
+        return ''
+      }
+      const point = pointFor(index, value)
+      const command = drawing ? 'L' : 'M'
+      drawing = true
+      return `${command} ${point.x} ${point.y}`
+    })
+    .join(' ')
+  return (
+    path + (props.axes.length > 2 && props.axes.every((axis) => axis[key] !== null) ? ' Z' : '')
+  )
+}
+const series = computed(() =>
+  (['lastMonth', 'thisMonth'] as const).map((key) => ({
+    key,
+    path: seriesPath(key),
+    complete: props.axes.every((axis) => axis[key] !== null),
+    points: props.axes.flatMap((axis, index) =>
+      axis[key] === null
+        ? []
+        : [{ ...pointFor(index, axis[key]), label: axis.label, value: axis[key] }],
+    ),
+  })),
 )
 </script>
 
 <template>
-  <svg :viewBox="`0 0 ${size} ${size}`" role="img" aria-label="Radar chart">
+  <p v-if="!hasValues" class="empty">{{ t('metrics.insufficient') }}</p>
+  <svg v-else :viewBox="`0 0 ${size} ${size}`" role="img" :aria-label="t('executive.radarTitle')">
     <polygon
       v-for="level in gridLevels"
       :key="level"
@@ -55,8 +86,27 @@ const lastMonthPolygon = computed(() =>
       class="grid-ring"
       fill="none"
     />
-    <polygon :points="lastMonthPolygon" class="poly poly-last" fill="none" />
-    <polygon :points="thisMonthPolygon" class="poly poly-this" />
+    <g v-for="item in series" :key="item.key">
+      <path
+        :d="item.path"
+        :class="item.key === 'thisMonth' ? 'poly-this' : 'poly-last'"
+        :style="!item.complete ? { fill: 'none' } : undefined"
+      />
+      <circle
+        v-for="point in item.points"
+        :key="point.label"
+        :cx="point.x"
+        :cy="point.y"
+        r="3"
+        :fill="item.key === 'thisMonth' ? 'var(--color-primary)' : 'var(--color-text-subtle)'"
+      >
+        <title>
+          {{ point.label }} ·
+          {{ t(item.key === 'thisMonth' ? 'executive.thisMonth' : 'executive.lastMonth') }}:
+          {{ point.value }}/5
+        </title>
+      </circle>
+    </g>
     <text
       v-for="(axis, i) in axes"
       :key="axis.label"
@@ -84,9 +134,15 @@ svg {
 }
 
 .poly-last {
+  fill: none;
   stroke: var(--color-text-subtle);
   stroke-width: 2;
   stroke-dasharray: 5 4;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .poly-this {

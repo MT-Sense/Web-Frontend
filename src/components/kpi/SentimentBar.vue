@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SentimentSplit } from '@/types/common'
 
-const props = defineProps<{ sentiment: SentimentSplit; compact?: boolean }>()
+const props = defineProps<{ sentiment: SentimentSplit | null; compact?: boolean }>()
+const { t } = useI18n()
 
-const segments = computed(() => [
-  { key: 'positive', value: props.sentiment.positive, color: 'var(--color-positive)' },
-  { key: 'neutral', value: props.sentiment.neutral, color: 'var(--color-neutral)' },
-  { key: 'negative', value: props.sentiment.negative, color: 'var(--color-negative)' },
-])
+const segments = computed(() =>
+  props.sentiment === null
+    ? []
+    : [
+        { key: 'positive', value: props.sentiment.positive, color: 'var(--color-positive)' },
+        { key: 'neutral', value: props.sentiment.neutral, color: 'var(--color-neutral)' },
+        { key: 'negative', value: props.sentiment.negative, color: 'var(--color-negative)' },
+      ],
+)
 </script>
 
 <template>
   <div class="sentiment-bar" :class="{ compact: props.compact }">
-    <div class="track">
+    <p v-if="sentiment === null" class="empty">{{ t('metrics.insufficient') }}</p>
+    <div v-else class="track">
       <div
         v-for="seg in segments"
         :key="seg.key"
@@ -43,6 +50,12 @@ const segments = computed(() => [
   border-radius: 999px;
   overflow: hidden;
   background: var(--color-bg);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .segment {
