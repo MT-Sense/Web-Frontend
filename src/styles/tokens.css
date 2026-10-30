@@ -172,6 +172,33 @@ textarea {
   font-size: inherit;
 }
 
+/* One global treatment for native dropdowns. Keep listboxes and custom Select
+   components unchanged. ChevronDown path comes from @lucide/vue.
+   :root + attribute selectors keep page-level background/padding shorthands
+   from resetting the arrow or its reserved space. */
+:root select:not([multiple]):is(:not([size]), [size='0'], [size='1']) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: var(--space-4) var(--space-4);
+  padding-inline-end: calc(var(--space-3) + var(--space-4) + var(--space-2));
+}
+
+:root select:not([multiple]):is(:not([size]), [size='0'], [size='1']):dir(rtl) {
+  background-position: left var(--space-3) center;
+}
+
+@media (forced-colors: active) {
+  :root select:not([multiple]):is(:not([size]), [size='0'], [size='1']) {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
+    padding-inline-end: var(--space-2);
+  }
+}
+
 a {
   color: var(--color-primary);
 }

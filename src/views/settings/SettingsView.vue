@@ -424,7 +424,7 @@ async function updateCollectTenure(value: boolean) {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 640px;
+  max-width: 1440px;
 }
 
 .panel h2 {

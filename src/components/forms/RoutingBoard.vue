@@ -2,6 +2,19 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Plus, RefreshCw, Settings } from '@lucide/vue'
 import { departments } from '@/api/dashboard'
 import type { Department } from '@/types/department'
 import * as routing from '@/api/routing'
@@ -14,10 +27,19 @@ const policy = ref<routing.Policy>({ version: 0, rules: [] })
 const rows = ref<routing.Case[]>([])
 const depts = ref<Department[]>([])
 const proposals = ref<automation.Proposal[]>([])
-const busy = ref(false), error = ref('')
-const title = ref(''), summary = ref(''), source = ref(''), filter = ref('all')
-const selected = ref(''), topic = ref(''), owner = ref(''), note = ref('')
-const page = ref(1), pageSize = ref(3)
+const busy = ref(false),
+  error = ref('')
+const title = ref(''),
+  summary = ref(''),
+  source = ref(''),
+  filter = ref('all')
+const selected = ref(''),
+  topic = ref(''),
+  owner = ref(''),
+  note = ref('')
+const rulesOpen = ref(false)
+const caseFormOpen = ref(false)
+const expandedCaseId = ref('')
 const labels = computed<Record<string, string>>(() => ({
   triage: t('routing.status.triage'),
   routed: t('routing.status.routed'),
@@ -31,17 +53,15 @@ const actions = computed<Record<string, string>>(() => ({
   complete: t('routing.action.complete'),
   retriage: t('routing.action.retriage'),
 }))
-const filteredRows = computed(() => rows.value.filter(r => filter.value === 'all' || r.status === filter.value))
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize.value)))
-const paginatedRows = computed(() => {
-  const start = (page.value - 1) * pageSize.value
-  return filteredRows.value.slice(start, start + pageSize.value)
-})
-const rangeStart = computed(() => filteredRows.value.length ? (page.value - 1) * pageSize.value + 1 : 0)
-const rangeEnd = computed(() => Math.min(page.value * pageSize.value, filteredRows.value.length))
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 function department(id: string) {
-  return depts.value.find(d => d.id === id)?.name ?? (id ? t('routing.deletedDepartment') : t('routing.unassigned'))
+  return (
+    depts.value.find((d) => d.id === id)?.name ??
+    (id ? t('routing.deletedDepartment') : t('routing.unassigned'))
+  )
 }
 
 async function run(fn: () => Promise<void>) {
@@ -61,14 +81,32 @@ async function run(fn: () => Promise<void>) {
 
 async function load() {
   await run(async () => {
-    const [p, c, d, a] = await Promise.all([routing.policy(), routing.cases(), departments(), automation.list()])
+    const [p, c, d, a] = await Promise.all([
+      routing.policy(),
+      routing.casesPage(page.value, pageSize.value, filter.value),
+      departments(),
+      automation.list(),
+    ])
     policy.value = { ...p, rules: p.rules ?? [] }
-    rows.value = c
+    setPage(c)
     depts.value = d
     proposals.value = a
     selected.value = ''
-    page.value = 1
   })
+}
+
+function setPage(result: routing.CasePage) {
+  rows.value = result.items
+  total.value = result.total
+  page.value = result.page
+}
+
+async function fetchPage() {
+  setPage(await routing.casesPage(page.value, pageSize.value, filter.value))
+}
+
+async function loadPage() {
+  await run(fetchPage)
 }
 
 function addRule() {
@@ -83,7 +121,7 @@ async function saveRules() {
 }
 
 function copyProposal() {
-  const p = proposals.value.find(p => p.id === source.value)
+  const p = proposals.value.find((p) => p.id === source.value)
 
   if (p) {
     title.value = p.title
@@ -95,12 +133,14 @@ async function create() {
   await run(async () => {
     const c = await routing.create(title.value, summary.value)
 
-    rows.value.unshift(c)
+    caseFormOpen.value = false
+    expandedCaseId.value = c.id
     title.value = ''
     summary.value = ''
     source.value = ''
     filter.value = 'all'
     page.value = 1
+    await fetchPage()
 
     toast.success(t('routing.caseCreated'), t('routing.caseCreatedDetail'))
   })
@@ -115,19 +155,27 @@ function select(c: routing.Case) {
 
 async function change(c: routing.Case, action: string) {
   await run(async () => {
-    const updated = await routing.update(c, action, topic.value, owner.value, note.value)
-
-    rows.value = rows.value.map(r => r.id === c.id ? updated : r)
+    await routing.update(c, action, topic.value, owner.value, note.value)
     selected.value = ''
-    page.value = 1
+    await fetchPage()
 
     toast.success(t('routing.updated'), t('routing.updatedDetail'))
   })
 }
 
-watch([filter, pageSize], () => {
-  page.value = 1
+watch(
+  [filter, pageSize],
+  () => {
+    page.value = 1
+  },
+  { flush: 'sync' },
+)
+
+watch([page, pageSize, filter], () => {
+  if (busy.value) return
   selected.value = ''
+  expandedCaseId.value = ''
+  void loadPage()
 })
 
 onMounted(load)
@@ -135,39 +183,64 @@ onMounted(load)
 
 <template>
   <section class="panel routing">
-    <header>
-      <h2>{{ t('routing.title') }}</h2>
-      <p>{{ t('routing.description') }}</p>
+    <header class="card-header">
+      <h2 class="panel-title">
+        {{ t('routing.title') }}
+        <InfoTooltip :label="t('routing.title')" :text="t('routing.description')" />
+      </h2>
+      <div class="buttons">
+        <Button
+          variant="secondary"
+          :disabled="busy"
+          :aria-expanded="rulesOpen"
+          aria-controls="routing-rules-editor"
+          @click="rulesOpen = !rulesOpen"
+        >
+          <Settings :size="16" aria-hidden="true" />
+          {{ t('hrAssistant.workspace.rules') }}
+        </Button>
+        <Button
+          :disabled="busy"
+          :aria-expanded="caseFormOpen"
+          aria-controls="routing-create-case"
+          @click="caseFormOpen = !caseFormOpen"
+        >
+          <Plus :size="16" aria-hidden="true" />
+          {{ t('routing.openCase') }}
+        </Button>
+      </div>
     </header>
 
-    <p v-if="error" role="alert" class="error">
-      {{ error }}
-    </p>
+    <Alert v-if="error" variant="destructive"
+      ><AlertDescription>{{ error }}</AlertDescription></Alert
+    >
 
-    <details>
-      <summary>{{ t('routing.rulesSummary', { count: policy.rules.length }) }}</summary>
-      <p>{{ t('routing.rulesHelp') }}</p>
+    <section v-if="rulesOpen" id="routing-rules-editor" class="workspace-form">
+      <h3>
+        {{ t('routing.rulesSummary', { count: policy.rules.length }) }}
+        <InfoTooltip
+          :label="t('routing.rulesSummary', { count: policy.rules.length })"
+          :text="t('routing.rulesHelp')"
+        />
+      </h3>
 
       <fieldset class="routing-rules" :disabled="busy">
-        <div
-          v-for="(r, i) in policy.rules"
-          :key="i"
-          class="routing-rule"
-        >
+        <div v-for="(r, i) in policy.rules" :key="i" class="routing-rule">
           <label>
             {{ t('routing.topic') }}
-            <input
-              v-model="r.topic"
-              maxlength="100"
-              :placeholder="t('routing.topicPlaceholder')"
-            />
+            <input v-model="r.topic" maxlength="100" :placeholder="t('routing.topicPlaceholder')" />
           </label>
 
           <label>
             {{ t('routing.keywords') }}
             <input
               :value="r.keywords.join(', ')"
-              @change="r.keywords = ($event.target as HTMLInputElement).value.split(',').map(s => s.trim()).filter(Boolean)"
+              @change="
+                r.keywords = ($event.target as HTMLInputElement).value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              "
             />
           </label>
 
@@ -177,11 +250,7 @@ onMounted(load)
               <option value="">
                 {{ t('routing.selectDepartment') }}
               </option>
-              <option
-                v-for="d in depts"
-                :key="d.id"
-                :value="d.id"
-              >
+              <option v-for="d in depts" :key="d.id" :value="d.id">
                 {{ d.name }}
               </option>
             </select>
@@ -194,33 +263,26 @@ onMounted(load)
             </span>
           </label>
 
-          <Button
-            type="button"
-            variant="secondary"
-            @click="policy.rules.splice(i, 1)"
-          >
+          <Button type="button" variant="secondary" @click="policy.rules.splice(i, 1)">
             {{ t('routing.deleteRule') }}
           </Button>
         </div>
       </fieldset>
 
       <div class="buttons">
-        <Button
-          variant="secondary"
-          :disabled="busy || policy.rules.length >= 50"
-          @click="addRule"
-        >
+        <Button variant="secondary" :disabled="busy || policy.rules.length >= 50" @click="addRule">
           {{ t('routing.addRule') }}
         </Button>
         <Button :disabled="busy" @click="saveRules">
           {{ t('routing.saveRules') }}
         </Button>
       </div>
-    </details>
-
-    <details>
-      <summary>{{ t('routing.openCase') }}</summary>
-      <p>{{ t('routing.openCaseHelp') }}</p>
+    </section>
+    <section v-if="caseFormOpen" id="routing-create-case" class="workspace-form">
+      <h3>
+        {{ t('routing.openCase') }}
+        <InfoTooltip :label="t('routing.openCase')" :text="t('routing.openCaseHelp')" />
+      </h3>
 
       <form @submit.prevent="create">
         <fieldset :disabled="busy">
@@ -230,11 +292,7 @@ onMounted(load)
               <option value="">
                 {{ t('routing.newCase') }}
               </option>
-              <option
-                v-for="p in proposals"
-                :key="p.id"
-                :value="p.id"
-              >
+              <option v-for="p in proposals" :key="p.id" :value="p.id">
                 {{ p.title }}
               </option>
             </select>
@@ -252,12 +310,7 @@ onMounted(load)
 
           <label>
             {{ t('routing.caseSummary') }}
-            <textarea
-              v-model="summary"
-              required
-              maxlength="3000"
-              rows="3"
-            />
+            <textarea v-model="summary" required maxlength="3000" rows="3" />
           </label>
 
           <Button type="submit">
@@ -265,208 +318,205 @@ onMounted(load)
           </Button>
         </fieldset>
       </form>
-    </details>
+    </section>
 
-    <div class="section-divider" />
-
-    <div class="buttons">
-      <label>
-        {{ t('routing.statusLabel') }}
-        <select v-model="filter">
-          <option value="all">
-            {{ t('routing.allLatest') }}
-          </option>
-          <option
-            v-for="(v, k) in labels"
-            :key="k"
-            :value="k"
-          >
-            {{ v }}
-          </option>
+    <div class="list-toolbar">
+      <label class="status-filter">
+        <span class="visually-hidden">{{ t('routing.statusLabel') }}</span>
+        <select v-model="filter" :disabled="busy">
+          <option value="all">{{ t('routing.allLatest') }}</option>
+          <option v-for="(label, key) in labels" :key="key" :value="key">{{ label }}</option>
         </select>
       </label>
-
-      <label>
-        {{ t('routing.perPage') }}
-        <select v-model.number="pageSize">
-          <option :value="3">3</option>
-          <option :value="5">5</option>
-          <option :value="10">10</option>
-        </select>
-      </label>
-
-      <Button
-        variant="secondary"
-        :disabled="busy"
-        @click="load"
-      >
+      <Button variant="secondary" :disabled="busy" @click="loadPage">
+        <RefreshCw :size="16" aria-hidden="true" />
         {{ t('routing.reload') }}
       </Button>
-
-      <span v-if="filteredRows.length" class="page-summary">
-        {{ t('routing.showing', { start: rangeStart, end: rangeEnd, total: filteredRows.length }) }}
-      </span>
     </div>
 
-    <p v-if="!filteredRows.length">
-      {{ rows.length ? t('routing.noFiltered') : t('routing.empty') }}
-    </p>
-
-    <article
-      v-for="c in paginatedRows"
-      :key="c.id"
-    >
-      <span class="badge">{{ labels[c.status] }}</span>
-      <h3>{{ c.title }}</h3>
-      <p>{{ c.summary }}</p>
-      <p>
-        {{ t('routing.topicValue', { topic: c.topic || t('routing.unassigned') }) }}
-        ·
-        {{
-          c.status === 'triage'
-            ? t('routing.recipientSuggested', { department: department(c.departmentId) })
-            : t('routing.recipient', { department: department(c.departmentId) })
-        }}
-      </p>
-      <small>{{ c.matchReason }}</small>
-
-      <Button
-        v-if="selected !== c.id && c.status !== 'completed'"
-        variant="secondary"
-        :disabled="busy"
-        @click="select(c)"
-      >
-        {{ t('routing.review') }}
-      </Button>
-
-      <fieldset
-        v-if="selected === c.id"
-        :disabled="busy"
-      >
-        <template v-if="c.status === 'triage'">
-          <label>
-            {{ t('routing.editableTopic') }}
-            <input v-model="topic" maxlength="100" />
-          </label>
-
-          <label>
-            {{ t('routing.responsibleDepartment') }}
-            <select v-model="owner">
-              <option value="">
-                {{ t('routing.selectDepartment') }}
-              </option>
-              <option
-                v-for="d in depts"
-                :key="d.id"
-                :value="d.id"
+    <LoadingSpinner v-if="busy && !rows.length" size="lg" />
+    <template v-else>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{{ t('routing.caseTitle') }}</TableHead>
+            <TableHead>{{ t('routing.topic') }}</TableHead>
+            <TableHead>{{ t('routing.ownerDepartment') }}</TableHead>
+            <TableHead>{{ t('routing.statusLabel') }}</TableHead>
+            <TableHead
+              ><span class="visually-hidden">{{
+                t('hrAssistant.workspace.details')
+              }}</span></TableHead
+            >
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <template v-for="c in rows" :key="c.id">
+            <TableRow :class="{ 'expanded-row': expandedCaseId === c.id }">
+              <TableCell class="case-name"
+                ><strong>{{ c.title }}</strong></TableCell
               >
-                {{ d.name }}
-              </option>
-            </select>
-          </label>
+              <TableCell>{{ c.topic || t('routing.unassigned') }}</TableCell>
+              <TableCell>{{ department(c.departmentId) }}</TableCell>
+              <TableCell
+                ><span class="badge" :class="c.status">{{ labels[c.status] }}</span></TableCell
+              >
+              <TableCell>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  :aria-expanded="expandedCaseId === c.id"
+                  :aria-controls="`case-details-${c.id}`"
+                  @click="expandedCaseId = expandedCaseId === c.id ? '' : c.id"
+                >
+                  {{
+                    t(
+                      expandedCaseId === c.id
+                        ? 'hrAssistant.workspace.hideDetails'
+                        : 'hrAssistant.workspace.details',
+                    )
+                  }}
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow v-if="expandedCaseId === c.id">
+              <TableCell :colspan="5" class="detail-cell">
+                <article :id="`case-details-${c.id}`" :aria-label="c.title">
+                  <span class="badge">{{ labels[c.status] }}</span>
+                  <h3>{{ c.title }}</h3>
+                  <p>{{ c.summary }}</p>
+                  <p>
+                    {{ t('routing.topicValue', { topic: c.topic || t('routing.unassigned') }) }}
+                    ·
+                    {{
+                      c.status === 'triage'
+                        ? t('routing.recipientSuggested', {
+                            department: department(c.departmentId),
+                          })
+                        : t('routing.recipient', { department: department(c.departmentId) })
+                    }}
+                  </p>
+                  <small>{{ c.matchReason }}</small>
 
-          <p>{{ t('routing.confirmRouteHelp') }}</p>
-        </template>
+                  <Button
+                    v-if="selected !== c.id && c.status !== 'completed'"
+                    variant="secondary"
+                    :disabled="busy"
+                    @click="select(c)"
+                  >
+                    {{ t('routing.review') }}
+                  </Button>
 
-        <label>
-          {{ t('routing.coordinationNote') }}
-          <textarea
-            v-model="note"
-            maxlength="1000"
-            rows="2"
-            :placeholder="t('routing.notePlaceholder')"
-          />
-        </label>
+                  <fieldset v-if="selected === c.id" :disabled="busy">
+                    <template v-if="c.status === 'triage'">
+                      <label>
+                        {{ t('routing.editableTopic') }}
+                        <input v-model="topic" maxlength="100" />
+                      </label>
 
-        <div class="buttons">
-          <Button
-            v-if="c.status === 'triage'"
-            :disabled="!topic.trim() || !owner || !note.trim()"
-            @click="change(c, 'route')"
-          >
-            {{ t('routing.confirmRoute') }}
-          </Button>
+                      <label>
+                        {{ t('routing.responsibleDepartment') }}
+                        <select v-model="owner">
+                          <option value="">
+                            {{ t('routing.selectDepartment') }}
+                          </option>
+                          <option v-for="d in depts" :key="d.id" :value="d.id">
+                            {{ d.name }}
+                          </option>
+                        </select>
+                      </label>
 
-          <Button
-            v-if="c.status === 'routed'"
-            :disabled="!note.trim()"
-            @click="change(c, 'acknowledge')"
-          >
-            {{ t('routing.acknowledge') }}
-          </Button>
+                      <p>{{ t('routing.confirmRouteHelp') }}</p>
+                    </template>
 
-          <Button
-            v-if="c.status === 'in_progress'"
-            :disabled="!note.trim()"
-            @click="change(c, 'complete')"
-          >
-            {{ t('routing.complete') }}
-          </Button>
+                    <label>
+                      {{ t('routing.coordinationNote') }}
+                      <textarea
+                        v-model="note"
+                        maxlength="1000"
+                        rows="2"
+                        :placeholder="t('routing.notePlaceholder')"
+                      />
+                    </label>
 
-          <Button
-            v-if="['routed', 'in_progress'].includes(c.status)"
-            variant="secondary"
-            :disabled="!note.trim()"
-            @click="change(c, 'retriage')"
-          >
-            {{ t('routing.retriage') }}
-          </Button>
+                    <div class="buttons">
+                      <Button
+                        v-if="c.status === 'triage'"
+                        :disabled="!topic.trim() || !owner || !note.trim()"
+                        @click="change(c, 'route')"
+                      >
+                        {{ t('routing.confirmRoute') }}
+                      </Button>
 
-          <Button
-            variant="secondary"
-            @click="selected = ''"
-          >
-            {{ t('routing.cancel') }}
-          </Button>
-        </div>
-      </fieldset>
+                      <Button
+                        v-if="c.status === 'routed'"
+                        :disabled="!note.trim()"
+                        @click="change(c, 'acknowledge')"
+                      >
+                        {{ t('routing.acknowledge') }}
+                      </Button>
 
-      <details>
-        <summary>{{ t('routing.history', { count: c.history.length }) }}</summary>
+                      <Button
+                        v-if="c.status === 'in_progress'"
+                        :disabled="!note.trim()"
+                        @click="change(c, 'complete')"
+                      >
+                        {{ t('routing.complete') }}
+                      </Button>
 
-        <div
-          v-for="(e, i) in c.history"
-          :key="i"
-          class="history"
-        >
-          <strong>
-            {{ actions[e.action] }} · {{ new Date(e.at).toLocaleString() }}
-          </strong>
-          <p>{{ e.note }}</p>
-          <small>
-            {{
-              t('routing.historyMeta', {
-                topic: e.topic || t('routing.unspecifiedTopic'),
-                department: department(e.departmentId),
-                actor: e.actor,
-              })
-            }}
-          </small>
-        </div>
-      </details>
-    </article>
+                      <Button
+                        v-if="['routed', 'in_progress'].includes(c.status)"
+                        variant="secondary"
+                        :disabled="!note.trim()"
+                        @click="change(c, 'retriage')"
+                      >
+                        {{ t('routing.retriage') }}
+                      </Button>
 
-    <nav
-      v-if="totalPages > 1"
-      class="pagination"
-      :aria-label="t('routing.paginationLabel')"
-    >
-      <Button
-        variant="secondary"
-        :disabled="page === 1"
-        @click="page--"
-      >
-        {{ t('routing.previous') }}
-      </Button>
-      <span>{{ t('routing.pageOf', { page, total: totalPages }) }}</span>
-      <Button
-        variant="secondary"
-        :disabled="page === totalPages"
-        @click="page++"
-      >
-        {{ t('routing.next') }}
-      </Button>
-    </nav>
+                      <Button variant="secondary" @click="selected = ''">
+                        {{ t('routing.cancel') }}
+                      </Button>
+                    </div>
+                  </fieldset>
+
+                  <details>
+                    <summary>{{ t('routing.history', { count: c.history.length }) }}</summary>
+
+                    <div v-for="(e, i) in c.history" :key="i" class="history">
+                      <strong>
+                        {{ actions[e.action] }} · {{ new Date(e.at).toLocaleString() }}
+                      </strong>
+                      <p>{{ e.note }}</p>
+                      <small>
+                        {{
+                          t('routing.historyMeta', {
+                            topic: e.topic || t('routing.unspecifiedTopic'),
+                            department: department(e.departmentId),
+                            actor: e.actor,
+                          })
+                        }}
+                      </small>
+                    </div>
+                  </details>
+                </article>
+              </TableCell>
+            </TableRow>
+          </template>
+          <TableRow v-if="!rows.length && !error">
+            <TableCell :colspan="5" class="empty">{{
+              filter !== 'all' ? t('routing.noFiltered') : t('routing.empty')
+            }}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+      <TablePagination
+        :page="page"
+        v-model:page-size="pageSize"
+        :total="total"
+        :disabled="busy"
+        @update:page="page = $event"
+      />
+    </template>
   </section>
 </template>
 
@@ -477,85 +527,49 @@ form,
 article {
   display: grid;
   gap: var(--space-4);
+  min-width: 0;
 }
-
-.routing {
-  padding: var(--space-5);
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
-
-header {
-  display: grid;
-  gap: var(--space-2);
-}
-
-header h2 {
+.card-header .panel-title {
   margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
 }
-
 h3 {
   margin: 0;
   font-size: var(--font-size-md);
   font-weight: 600;
 }
-
-.routing p {
+p {
   margin: 0;
   line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
-header p,
-small,
-.page-summary {
+small {
   color: var(--color-text-muted);
 }
-
-details,
-article {
-  min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+.workspace-form {
+  display: grid;
+  gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
 }
-
-details {
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-details[open] {
-  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
-  box-shadow: var(--shadow-sm);
-}
-
-summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-details[open] > summary {
-  margin-bottom: var(--space-4);
-}
-
 fieldset {
   border: 0;
   padding: 0;
-  min-width: 0;
 }
-
 label {
   display: grid;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
   min-width: 0;
 }
-
 input,
 select,
 textarea {
@@ -568,126 +582,134 @@ textarea {
   padding: var(--space-2);
   font: inherit;
 }
-
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
-
 textarea {
   width: 100%;
   resize: vertical;
 }
-
 .routing-rules {
   gap: var(--space-3);
-  margin: var(--space-4) 0;
+  margin: var(--space-3) 0;
 }
-
 .routing-rule {
   display: grid;
-  grid-template-columns:
-    minmax(160px, 1fr)
-    minmax(240px, 1.5fr)
-    minmax(180px, 1fr)
-    auto
-    auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) auto auto;
   gap: var(--space-3);
   align-items: end;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-surface);
   min-width: 0;
 }
-
 .routing-rule > * {
   min-width: 0;
 }
-
 .enabled-field {
   white-space: nowrap;
 }
-
 .enabled-field span {
   display: flex;
   gap: var(--space-2);
   align-items: center;
 }
-
 .enabled-field input {
   width: auto;
 }
-
-.buttons {
+.buttons,
+.list-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: end;
 }
-
-.page-summary {
-  font-size: var(--font-size-sm);
-  padding-bottom: var(--space-2);
+.list-toolbar {
+  justify-content: space-between;
 }
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-3);
+.status-filter {
+  max-width: 100%;
 }
-
+.case-name {
+  min-width: 22ch;
+  max-width: 40ch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .badge {
-  justify-self: start;
+  display: inline-block;
+  width: fit-content;
   background: var(--color-accent-100);
   color: var(--color-primary);
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   font-weight: 600;
+  white-space: nowrap;
 }
-
+.badge.completed {
+  background: var(--color-positive-bg);
+  color: var(--color-positive);
+}
+.badge.in_progress {
+  background: var(--color-neutral-bg);
+  color: var(--color-warning);
+}
+.expanded-row {
+  background: var(--color-primary-bg);
+}
+.detail-cell {
+  padding: var(--space-4);
+  white-space: normal;
+}
+article {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+article details {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+details[open] > summary {
+  margin-bottom: var(--space-3);
+}
 .history {
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--color-border);
 }
-
-.error {
-  color: var(--color-danger);
+.empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  white-space: normal;
 }
-
-.section-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--space-2) 0;
-}
-
 @media (max-width: 1100px) {
   .routing-rule {
     grid-template-columns: 1fr 1fr;
   }
-
-  .enabled-field {
-    align-self: end;
-  }
 }
-
-@media (max-width: 650px) {
-  .routing {
-    padding: var(--space-4);
-  }
-
+@media (max-width: 640px) {
   .routing-rule {
     grid-template-columns: 1fr;
   }
-
-  .buttons {
+  .card-header,
+  .card-header .buttons {
     align-items: stretch;
   }
-
-  .buttons > button {
+  .card-header .buttons,
+  .card-header .buttons > button {
     width: 100%;
+  }
+  .workspace-form {
+    padding: var(--space-3);
   }
 }
 </style>

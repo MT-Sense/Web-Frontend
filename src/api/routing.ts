@@ -42,6 +42,18 @@ export function savePolicy(currentPolicy: Policy) {
   return api.patch<Policy>(`${root}/routing-policy`, currentPolicy)
 }
 
+export interface CasePage {
+  items: Case[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export const casesPage = (page: number, pageSize: number, status = 'all') =>
+  api.get<CasePage>(
+    `${root}/cases?${new URLSearchParams({ page: String(page), pageSize: String(pageSize), status })}`,
+  )
+
 export function cases() {
   return api.get<Case[]>(`${root}/cases`)
 }
