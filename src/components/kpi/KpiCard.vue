@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
+
 withDefaults(
   defineProps<{
     label: string
     value: string
     sublabel?: string
+    description?: string
     trend?: 'up' | 'down' | 'flat'
   }>(),
   { sublabel: '', trend: undefined },
@@ -15,7 +18,10 @@ const trendClass: Record<string, string> = { up: 'trend-up', down: 'trend-down',
 
 <template>
   <div class="kpi-card panel">
-    <div class="label">{{ label }}</div>
+    <div class="label">
+      {{ label }}
+      <InfoTooltip v-if="description" :label="label" :text="description" />
+    </div>
     <div class="value-row">
       <span class="value">{{ value }}</span>
       <span v-if="trend" class="trend" :class="trendClass[trend]">{{ trendIcon[trend] }}</span>

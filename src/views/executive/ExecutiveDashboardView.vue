@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download, Mail } from '@lucide/vue'
 import ExecutiveLayout from '@/layouts/ExecutiveLayout.vue'
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import PrivacyBanner from '@/components/layout/PrivacyBanner.vue'
@@ -107,7 +109,7 @@ const positionBarData = computed(() =>
 
     <PrivacyBanner variant="executive-rule" />
 
-    <p v-if="loading && !executiveHealth">{{ t('common.loading') }}</p>
+    <LoadingSpinner v-if="loading && !executiveHealth" size="lg" />
     <Alert v-else-if="error" variant="destructive">
       <AlertDescription>
         {{ t('common.loadError') }}
@@ -119,7 +121,10 @@ const positionBarData = computed(() =>
       <KnowledgeQAPanel />
 
       <section class="panel health-card">
-        <h2>{{ t('executive.orgHealth') }}</h2>
+        <h2>
+          {{ t('executive.orgHealth') }}
+          <InfoTooltip :label="t('executive.orgHealth')" :text="t('dashboardHelp.health')" />
+        </h2>
         <div class="health-body">
           <span class="score">{{ executiveHealth.score }}/100</span>
           <SentimentBar :sentiment="executiveHealth.sentiment" />
@@ -127,7 +132,10 @@ const positionBarData = computed(() =>
       </section>
 
       <section class="panel">
-        <h2>{{ t('executive.radarTitle') }}</h2>
+        <h2>
+          {{ t('executive.radarTitle') }}
+          <InfoTooltip :label="t('executive.radarTitle')" :text="t('dashboardHelp.radar')" />
+        </h2>
         <div class="radar-wrap">
           <RadarChart :axes="radarAxes" />
           <div class="legend">
@@ -139,11 +147,17 @@ const positionBarData = computed(() =>
 
       <div class="two-col">
         <section class="panel">
-          <h2>{{ t('executive.departmentScores') }}</h2>
+          <h2>
+            {{ t('executive.departmentScores') }}
+            <InfoTooltip :label="t('executive.departmentScores')" :text="t('dashboardHelp.comparison')" />
+          </h2>
           <HorizontalBarChart :data="departmentBarData" :show-values="false" />
         </section>
         <section class="panel">
-          <h2>{{ t('executive.positionScores') }}</h2>
+          <h2>
+            {{ t('executive.positionScores') }}
+            <InfoTooltip :label="t('executive.positionScores')" :text="t('dashboardHelp.comparison')" />
+          </h2>
           <HorizontalBarChart :data="positionBarData" :show-values="true" :max="5" />
         </section>
       </div>

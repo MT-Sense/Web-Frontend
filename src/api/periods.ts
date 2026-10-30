@@ -7,6 +7,19 @@ export function list() {
   return api.get<SurveyPeriod[]>('/api/survey-periods')
 }
 
+export interface SurveyPeriodPage {
+  items: SurveyPeriod[]
+  total: number
+  page: number
+  pageSize: number
+  latestPeriod: Pick<SurveyPeriod, 'month' | 'year'> | null
+}
+
+export function listPage(page: number, pageSize: number) {
+  const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+  return api.get<SurveyPeriodPage>(`/api/survey-periods?${query.toString()}`)
+}
+
 export function create(payload: { month: number; year: number; enabledExtraQuestions: string[] }) {
   return api.post<SurveyPeriod>('/api/survey-periods', payload)
 }

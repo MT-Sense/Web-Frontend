@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Bell, CircleCheck } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
 import type { Alert } from '@/types/alert'
 import type { Department } from '@/types/department'
 
@@ -15,7 +16,10 @@ function departmentName(id?: string) {
 
 <template>
   <div class="alerts-heading">
-    <h2>{{ t('alerts.title') }}</h2>
+    <h2>
+        {{ t('alerts.title') }}
+        <InfoTooltip :label="t('alerts.title')" :text="t('dashboardHelp.alerts')" />
+      </h2>
     <span v-if="alerts?.length" class="alert-count">{{ alerts.length }}</span>
   </div>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
 import type { Locale } from '@/types/common'
 import type { AiInsight } from '@/types/insight'
 import ProgressBarLabeled from '@/components/charts/ProgressBarLabeled.vue'
@@ -17,7 +18,10 @@ function capitalize(s: string) {
 <template>
   <section class="insight-panel panel">
     <div class="header">
-      <h2>{{ t('insight.title') }}</h2>
+      <h2>
+        {{ t('insight.title') }}
+        <InfoTooltip :label="t('insight.title')" :text="t('dashboardHelp.insight')" />
+      </h2>
       <div class="score">
         <span class="score-value">{{ insight.overallScore }}/100</span>
         <span class="confidence" :class="`confidence-${insight.confidence}`">{{ confidenceLabel }}</span>

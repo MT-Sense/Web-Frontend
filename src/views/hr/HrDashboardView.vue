@@ -7,6 +7,8 @@ import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
+import InfoTooltip from '@/components/common/InfoTooltip.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import KpiCard from '@/components/kpi/KpiCard.vue'
 import SentimentBar from '@/components/kpi/SentimentBar.vue'
 import TrendLineChart from '@/components/charts/TrendLineChart.vue'
@@ -276,7 +278,7 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
       :period-label="periodOptions.find((option) => option.value === selectedPeriod)?.label"
     />
 
-    <p v-if="loading">{{ t('common.loading') }}</p>
+    <LoadingSpinner v-if="loading" size="lg" />
     <Alert v-else-if="error" variant="destructive">
       <AlertDescription>
         {{ t('common.loadError') }}
@@ -288,22 +290,26 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
       <div class="kpi-row">
         <KpiCard
           :label="t('kpi.enps')"
+          :description="t('dashboardHelp.enps')"
           :value="String(data.kpis.enps.value)"
           :sublabel="`${data.kpis.enps.deltaVsLastMonth >= 0 ? '+' : ''}${data.kpis.enps.deltaVsLastMonth} vs last month`"
           trend="up"
         />
         <KpiCard
           :label="t('kpi.satisfaction')"
+          :description="t('dashboardHelp.satisfaction')"
           :value="`${data.kpis.satisfaction.value}/5`"
           :trend="data.kpis.satisfaction.trend"
         />
         <KpiCard
           :label="t('kpi.burnoutRisk')"
+          :description="t('dashboardHelp.burnout')"
           :value="`${data.kpis.burnoutRisk.percentage}%`"
           :sublabel="`${data.kpis.burnoutRisk.departmentsAtRisk} ${t('kpi.departmentsToWatch')}`"
         />
         <KpiCard
           :label="t('kpi.responseRate')"
+          :description="t('dashboardHelp.responseRate')"
           :value="`${data.kpis.responseRate.percentage}%`"
           :sublabel="`${data.kpis.responseRate.responded}/${data.kpis.responseRate.total}`"
         />
@@ -311,7 +317,13 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
 
       <section class="panel trend-panel">
         <div class="trend-heading">
-          <h2>{{ t('trend.title') }}<span v-if="isFiltered"> · {{ selectedDepartmentName }}</span></h2>
+          <h2>
+            {{ t('trend.title') }}<span v-if="isFiltered"> · {{ selectedDepartmentName }}</span>
+            <InfoTooltip
+              :label="t('trend.title')"
+              :text="[t(trendForecast ? 'trend.methodNote' : 'trend.insufficientForecast'), selectedTrendMetric === 'responseRate' ? t('trend.responseRateNote') : ''].filter(Boolean).join('\n\n')"
+            />
+          </h2>
           <div class="trend-metrics" role="group" :aria-label="t('trend.selectMetric')">
             <button
               v-for="metric in trendMetrics"
@@ -336,17 +348,16 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
           :format="activeTrendMetric.format"
           :empty-text="t('trend.empty')"
         />
-        <p class="trend-note">{{ t(trendForecast ? 'trend.methodNote' : 'trend.insufficientForecast') }}</p>
-        <p v-if="selectedTrendMetric === 'responseRate'" class="trend-note">{{ t('trend.responseRateNote') }}</p>
       </section>
 
       <div class="department-alerts-grid">
         <section class="panel department-summary-panel">
-          <h2>{{ t('departmentScores.title') }}</h2>
+          <h2>
+            {{ t('departmentScores.title') }}
+            <InfoTooltip :label="t('departmentScores.title')" :text="[t('departmentScores.headcountNote'), t('departmentScores.methodNote')].join('\n\n')" />
+          </h2>
           <DepartmentSummaryTable v-if="data.departmentSummary" :rows="departmentSummaryRows" />
           <p v-else class="wordcloud-error">{{ t('common.loadError') }}</p>
-          <p class="summary-note">{{ t('departmentScores.headcountNote') }}</p>
-          <p class="summary-note">{{ t('departmentScores.methodNote') }}</p>
         </section>
         <section class="panel alerts-panel">
           <DashboardAlerts :alerts="data.alerts" :departments="data.heatmap.rows.map((row) => row.department)" />
@@ -354,14 +365,19 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
       </div>
 
       <section class="panel heatmap-panel">
-        <h2>{{ t('heatmap.title') }}</h2>
-        <p class="heatmap-scope">{{ t('heatmap.filterScope') }}</p>
+        <h2>
+          {{ t('heatmap.title') }}
+          <InfoTooltip :label="t('heatmap.title')" :text="[t('dashboardHelp.heatmap'), t('heatmap.filterScope')].join('\n\n')" />
+        </h2>
         <HeatmapGrid v-if="heatmapTopics.length" :topics="heatmapTopics" :rows="displayedHeatmapRows" compact @cell-click="goToTopic" />
         <p v-else class="heatmap-scope">{{ t('heatmap.noVisibleTopics') }}</p>
       </section>
 
       <section v-if="data.extraQuestions.length > 0" class="panel">
-        <h2>{{ t('periods.extraQuestions.resultsTitle') }}</h2>
+        <h2>
+          {{ t('periods.extraQuestions.resultsTitle') }}
+          <InfoTooltip :label="t('periods.extraQuestions.resultsTitle')" :text="t('dashboardHelp.extraQuestions')" />
+        </h2>
         <ul class="extra-question-results">
           <li v-for="q in data.extraQuestions" :key="q.key">
             <span class="eq-label">{{ locale === 'th' ? q.label.th : q.label.en }}</span>
@@ -382,10 +398,16 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
         </Alert>
 
         <section class="panel wordcloud-panel">
-          <h2>{{ t('kpi.sentimentDistribution') }}</h2>
+          <h2>
+            {{ t('kpi.sentimentDistribution') }}
+            <InfoTooltip :label="t('kpi.sentimentDistribution')" :text="t('dashboardHelp.sentiment')" />
+          </h2>
           <SentimentBar :sentiment="data.kpis.sentiment" />
           <hr class="rule" />
-          <h2>{{ t('wordcloud.title') }}</h2>
+          <h2>
+            {{ t('wordcloud.title') }}
+            <InfoTooltip :label="t('wordcloud.title')" :text="t('dashboardHelp.terms')" />
+          </h2>
           <WordCloud v-if="data.wordCloud" :terms="data.wordCloud" compact />
           <p v-else class="wordcloud-error">{{ t('wordcloud.loadError') }}</p>
         </section>
@@ -453,7 +475,6 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
 .trend-metric:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .trend-metric.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
 .trend-metric:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.trend-note { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--font-size-xs); }
 
 .heatmap-scope {
   margin: 0 0 var(--space-3);
@@ -487,7 +508,6 @@ function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['departm
 .insight-unavailable { min-width: 0; }
 .wordcloud-panel { min-width: 0; }
 .wordcloud-panel .rule { margin: var(--space-5) 0; }
-.summary-note { margin: var(--space-3) 0 0; color: var(--color-text-muted); font-size: var(--font-size-xs); }
 
 .extra-question-results {
   list-style: none;

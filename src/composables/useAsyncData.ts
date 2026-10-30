@@ -6,16 +6,19 @@ export function useAsyncData<T>(fetcher: () => Promise<T>) {
   const data = shallowRef<T | null>(null)
   const loading = ref(true)
   const error = ref(false)
+  let requestId = 0
 
   async function load() {
+    const currentRequest = ++requestId
     loading.value = true
     error.value = false
     try {
-      data.value = await fetcher()
+      const result = await fetcher()
+      if (currentRequest === requestId) data.value = result
     } catch {
-      error.value = true
+      if (currentRequest === requestId) error.value = true
     } finally {
-      loading.value = false
+      if (currentRequest === requestId) loading.value = false
     }
   }
 
