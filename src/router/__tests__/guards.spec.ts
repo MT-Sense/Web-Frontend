@@ -29,7 +29,7 @@ describe('requireRole', () => {
     localStorage.clear()
   })
 
-  // requireRole awaits auth.hydrate() first (see guards.ts) — with no stored refresh token,
+  // requireRole awaits auth.hydrate() first (see guards.ts) - with no stored refresh token,
   // hydrate() resolves immediately without a network call, so these stay synchronous-fast.
 
   it('allows public routes with no meta.roles', async () => {

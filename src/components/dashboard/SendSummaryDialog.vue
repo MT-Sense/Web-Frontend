@@ -42,7 +42,7 @@ async function loadRecipients() {
   error.value = ''
   try {
     recipients.value = await emailApi.recipients()
-    // Preselect everyone except yourself — the usual case is "share with the other leaders".
+    // Preselect everyone except yourself - the usual case is "share with the other leaders".
     selected.value = recipients.value.filter((r) => r.id !== auth.currentUser?.id).map((r) => r.id)
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)

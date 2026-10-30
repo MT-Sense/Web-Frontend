@@ -6,7 +6,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <!-- Deliberately no v-if/collapse control here — this panel cannot be dismissed. -->
+  <!-- Deliberately no v-if/collapse control here - this panel cannot be dismissed. -->
   <div class="privacy-settings">
     <Lock :size="16" class="icon" aria-hidden="true" />
     <span>{{ t('privacy.formBuilder') }}</span>

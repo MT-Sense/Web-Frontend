@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** Used by the signup/join-and-register flows, which mint a session the same way login
-   * does but via a different endpoint — keeps SignupView/RegisterAccountView from reaching
+   * does but via a different endpoint - keeps SignupView/RegisterAccountView from reaching
    * into persistSession directly. */
   function completeRegistration(res: AuthResponse) {
     persistSession(res.accessToken, res.refreshToken, res.user)
@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** If a refresh token survived a reload, use it to restore the session. The router guard
-   * awaits this on every navigation (see router/guards.ts) — memoized as a single in-flight
+   * awaits this on every navigation (see router/guards.ts) - memoized as a single in-flight
    * promise so every caller (not just the first) waits for the *same* completed attempt,
    * rather than a boolean flag that would let a second concurrent caller resolve early while
    * the first attempt's network round-trip is still pending. */

@@ -12,7 +12,7 @@ const props = withDefaults(
   defineProps<{
     data: HorizontalBarDatum[]
     max?: number
-    /** When false, no numeric value is rendered — bars are visual comparison only. */
+    /** When false, no numeric value is rendered - bars are visual comparison only. */
     showValues?: boolean
   }>(),
   { showValues: true },

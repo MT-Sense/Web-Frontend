@@ -1,7 +1,7 @@
 import type { LocalizedText, SentimentSplit } from './common'
 
 /** Single source of truth for the 6 satisfaction dimensions shared by the HR heatmap
- * columns and the Executive radar chart axes — both must stay identical by construction. */
+ * columns and the Executive radar chart axes - both must stay identical by construction. */
 export interface Topic {
   id: string
   label: LocalizedText

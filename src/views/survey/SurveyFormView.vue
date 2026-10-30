@@ -32,7 +32,7 @@ const error = ref(false)
 const submitting = ref(false)
 const submitError = ref(false)
 
-// Only the questions this period actually enabled, in catalog order — not a form builder,
+// Only the questions this period actually enabled, in catalog order - not a form builder,
 // just a filtered view of the fixed catalog (see dto.ExtraQuestionCatalog on the backend).
 const enabledExtraQuestions = computed(() => {
   const enabled = new Set(period.value?.enabledExtraQuestions ?? [])

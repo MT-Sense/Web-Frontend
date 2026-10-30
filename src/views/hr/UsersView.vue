@@ -215,8 +215,8 @@ async function sendReset() {
                   <div class="email">{{ u.email }}</div>
                 </td>
                 <td>{{ t(`role.${u.role}`) }}</td>
-                <td>{{ u.departmentName || '—' }}</td>
-                <td>{{ u.positionName || '—' }}</td>
+                <td>{{ u.departmentName || '-' }}</td>
+                <td>{{ u.positionName || '-' }}</td>
                 <td>{{ formatDate(u.lastLoginAt) }}</td>
                 <td>
                   <Button size="sm" variant="secondary" @click="openEdit(u)">

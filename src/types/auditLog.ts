@@ -1,4 +1,4 @@
-/** Tracks only whether the caller submitted each survey period, never what they answered —
+/** Tracks only whether the caller submitted each survey period, never what they answered -
  * intentionally decoupled from any response content at the type level. */
 export interface PeriodSubmissionStatus {
   periodId: string

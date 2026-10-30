@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
  * only changes useAuthStore, not this function.
  *
  * Vue Router starts resolving its initial navigation (and running beforeEach guards) the
- * moment the router is created — independent of when app.mount() runs. Delaying mount until
+ * moment the router is created - independent of when app.mount() runs. Delaying mount until
  * a stored refresh token is hydrated does NOT delay this first guard call, so the guard must
  * await hydration itself. auth.hydrate() is memoized (a single in-flight promise), so this
  * await is a no-op on every navigation after the first. */

@@ -7,7 +7,7 @@ const { t } = useI18n()
 
 function responseLabel(row: DepartmentSummaryRow) {
   const count = row.responded.suppressed ? '<5' : String(row.responded.data)
-  return `${count} / ${row.total ?? '—'}`
+  return `${count} / ${row.total ?? '-'}`
 }
 
 function statusLabel(row: DepartmentSummaryRow) {
@@ -38,11 +38,11 @@ function statusLabel(row: DepartmentSummaryRow) {
             {{ row.departmentId === '__unassigned__' ? t('heatmap.unassigned') : row.name }}
           </th>
           <td>{{ responseLabel(row) }}</td>
-          <td class="number">{{ row.score.suppressed ? '—' : `${row.score.data.toFixed(1)}/5` }}</td>
+          <td class="number">{{ row.score.suppressed ? '-' : `${row.score.data.toFixed(1)}/5` }}</td>
           <td class="number" :class="{ positive: row.change !== null && row.change > 0, negative: row.change !== null && row.change < 0 }">
-            {{ row.change === null ? '—' : `${row.change > 0 ? '+' : ''}${row.change.toFixed(1)}` }}
+            {{ row.change === null ? '-' : `${row.change > 0 ? '+' : ''}${row.change.toFixed(1)}` }}
           </td>
-          <td class="number">{{ row.forecast === null ? '—' : `${row.forecast.toFixed(1)}/5` }}</td>
+          <td class="number">{{ row.forecast === null ? '-' : `${row.forecast.toFixed(1)}/5` }}</td>
           <td><span class="status" :class="row.status">{{ statusLabel(row) }}</span></td>
         </tr>
         <tr v-if="rows.length === 0">

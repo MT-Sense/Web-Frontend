@@ -23,7 +23,7 @@
   --color-accent-800: #1e40af;
   --color-accent-900: #172554;
 
-  /* role badge colors — the design import has no opinion on these, carried forward */
+  /* role badge colors - the design import has no opinion on these, carried forward */
   --color-hr: #1d4ed8;
   --color-hr-bg: #eff6ff;
   --color-executive: #7a3be0;
@@ -31,7 +31,7 @@
   --color-employee: #1b9e6f;
   --color-employee-bg: #e6f6ef;
 
-  /* sentiment colors — likewise unchanged */
+  /* sentiment colors - likewise unchanged */
   --color-positive: #1b9e6f;
   --color-positive-bg: #e6f6ef;
   --color-negative: #d64545;
@@ -39,7 +39,7 @@
   --color-danger: #d64545;
   --color-warning: #c98a1c;
 
-  /* Heatmap scale — darker = worse score. */
+  /* Heatmap scale - darker = worse score. */
   --color-heat-1: #0b1f44;
   --color-heat-2: #173a78;
   --color-heat-3: #1e40af;
@@ -216,7 +216,7 @@ a {
   box-shadow: var(--shadow-lg);
 }
 
-/* Freestanding rules fade out at both ends — a Nocturne signature. */
+/* Freestanding rules fade out at both ends - a Nocturne signature. */
 .rule {
   height: 1px;
   border: 0;
@@ -230,7 +230,7 @@ a {
   );
 }
 
-/* Currently unused — App.vue dropped the <Transition> wrapper around routed views because
+/* Currently unused - App.vue dropped the <Transition> wrapper around routed views because
    the pinned Vue 3.6 RC leaves mode="out-in" stuck mid-leave (old view never unmounts) when
    combined with a keyed dynamic component driven by async route components. Rules kept here
    in case a future Vue version fixes it and the transition gets re-added. */

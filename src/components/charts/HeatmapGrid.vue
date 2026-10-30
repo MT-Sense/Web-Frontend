@@ -129,7 +129,7 @@ function heatClass(score: number) {
   transform: scale(0.97);
 }
 
-/* the two darkest steps take light text, the rest dark — per the design's own flip rule */
+/* the two darkest steps take light text, the rest dark - per the design's own flip rule */
 .cell.heat-1 {
   background: var(--color-heat-1);
   color: var(--color-accent-100);

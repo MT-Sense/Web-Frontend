@@ -30,7 +30,7 @@ export interface ExecutiveHealth {
   sentiment: SentimentSplit
   radar: { topicId: string; thisMonth: number; lastMonth: number }[]
   departmentComparison: { departmentId: string; score: Suppressible<number> }[]
-  /** Replaces the old tenure-bucket breakdown — the backend schema tracks position, not
+  /** Replaces the old tenure-bucket breakdown - the backend schema tracks position, not
    * tenure. Positions below n<5 are simply absent from the list. */
   positionComparison: PositionScore[]
   decisionItems: DecisionItem[]

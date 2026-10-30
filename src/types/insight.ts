@@ -1,6 +1,6 @@
 import type { ConfidenceLevel, LocalizedText } from './common'
 
-/** All content in this file is mock AI output — replace with real pipeline results in the backend pass. */
+/** All content in this file is mock AI output - replace with real pipeline results in the backend pass. */
 export interface AiInsight {
   overallScore: number
   confidence: ConfidenceLevel

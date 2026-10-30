@@ -1,7 +1,7 @@
 /** Fixed 2-field survey model, matching the backend's survey_responses schema: one
- * satisfaction score (1-5) plus an optional open comment per period — no more multi-step,
+ * satisfaction score (1-5) plus an optional open comment per period - no more multi-step,
  * multi-question-type forms. HR can additionally toggle on a small fixed catalog of extra
- * questions per round (see ExtraQuestionDef) — still not a form builder, just on/off. */
+ * questions per round (see ExtraQuestionDef) - still not a form builder, just on/off. */
 export interface SurveyPeriod {
   id: string
   month: number

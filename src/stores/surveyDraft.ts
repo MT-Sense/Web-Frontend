@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue'
 import { defineStore } from 'pinia'
 
-/** Single-screen draft for the fixed satisfaction_score + comment_text survey — no more
+/** Single-screen draft for the fixed satisfaction_score + comment_text survey - no more
  * multi-step/multi-question state, just autosave for the one open period. */
 export interface SurveyDraft {
   periodId: string | null

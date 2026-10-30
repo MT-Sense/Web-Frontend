@@ -387,7 +387,7 @@ async function updateCollectTenure(value: boolean) {
           <li v-for="entry in history ?? []" :key="entry.periodId">
             <Check v-if="entry.status === 'submitted'" :size="14" class="log-icon done" aria-hidden="true" />
             <Circle v-else :size="14" class="log-icon" aria-hidden="true" />
-            {{ entry.year }}-{{ String(entry.month).padStart(2, '0') }} — {{ entry.status }}
+            {{ entry.year }}-{{ String(entry.month).padStart(2, '0') }} - {{ entry.status }}
           </li>
         </ul>
         <div class="actions">

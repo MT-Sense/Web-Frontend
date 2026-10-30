@@ -173,7 +173,7 @@ function remove(item: ActionItem) {
             <Button size="sm" variant="secondary" @click="editingId = null">{{ t('common.cancel') }}</Button>
           </div>
           <p v-else class="meta">
-            {{ t('actionItems.assignee') }}: {{ item.assignee || '—' }}
+            {{ t('actionItems.assignee') }}: {{ item.assignee || '-' }}
             <template v-if="item.targetDate"> · {{ t('actionItems.targetDate') }}: {{ item.targetDate }}</template>
             <template v-if="item.doneAt"> · {{ t('actionItems.doneOn', { date: item.doneAt }) }}</template>
             · {{ item.level === 'decision' ? t('actionItems.byExecutive') : t('actionItems.byHr') }}

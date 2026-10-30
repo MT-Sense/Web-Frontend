@@ -14,7 +14,7 @@ const { locale, t } = useI18n()
       <li v-for="issue in issues" :key="issue.id">
         <span class="mark">!</span>
         <span class="label">{{ issue.label[locale as Locale] }}</span>
-        <span class="dash">—</span>
+        <span class="dash">-</span>
         <span class="dept">{{ issue.departmentName[locale as Locale] }}</span>
       </li>
     </ul>

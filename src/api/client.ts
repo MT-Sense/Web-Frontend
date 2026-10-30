@@ -20,7 +20,7 @@ export function setRefreshHandler(handler: () => Promise<boolean>) {
   refreshHandler = handler
 }
 
-/** Called when refresh fails (or there is nothing to refresh) — the session is unrecoverable. */
+/** Called when refresh fails (or there is nothing to refresh) - the session is unrecoverable. */
 export function setUnauthorizedHandler(handler: () => void) {
   unauthorizedHandler = handler
 }
@@ -52,7 +52,7 @@ export class ApiError extends Error {
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
-  /** Set false for the two public auth endpoints — no bearer token, no refresh-on-401. */
+  /** Set false for the two public auth endpoints - no bearer token, no refresh-on-401. */
   auth?: boolean
 }
 
@@ -65,7 +65,7 @@ async function parseErrorMessage(res: Response): Promise<{ message: string; deta
       return { message: details[0] ?? res.statusText, details, body: data }
     }
   } catch {
-    // body wasn't JSON — fall through to statusText
+    // body wasn't JSON - fall through to statusText
   }
   return { message: res.statusText || `request failed with status ${res.status}`, details: [], body: {} }
 }
