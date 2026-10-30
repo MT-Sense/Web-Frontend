@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Download, Mail } from '@lucide/vue'
 import HrLayout from '@/layouts/HrLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -31,8 +31,15 @@ const { t, locale } = useI18n()
 const router = useRouter()
 const { toast } = useToast()
 
-const selectedPeriod = ref('')
-const selectedDepartment = ref('all')
+const route = useRoute()
+const selectedPeriod = computed({
+  get: () => typeof route.query.period === 'string' ? route.query.period : '',
+  set: period => { void router.replace({ query: { ...route.query, period } }) },
+})
+const selectedDepartment = computed({
+  get: () => typeof route.query.department === 'string' ? route.query.department : 'all',
+  set: department => { void router.replace({ query: { ...route.query, department: department === 'all' ? undefined : department } }) },
+})
 const emailDialogOpen = ref(false)
 type TrendMetric = 'enps' | 'satisfaction' | 'responseRate' | 'burnoutRisk'
 const selectedTrendMetric = ref<TrendMetric>('satisfaction')
@@ -247,7 +254,7 @@ function exportCsv() {
 function goToTopic(topicId: string, department: dashboardApi.HeatmapRow['department']) {
   router.push({
     path: `/dashboard/topics/${topicId}`,
-    query: { department: department.id, period: selectedPeriod.value || undefined },
+    query: { department: department.id, period: selectedPeriod.value || undefined, returnPeriod: selectedPeriod.value || undefined, returnDepartment: selectedDepartment.value },
   })
 }
 

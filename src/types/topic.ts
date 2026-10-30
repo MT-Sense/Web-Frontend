@@ -9,7 +9,7 @@ export interface Topic {
 
 export interface TopicTrendPoint {
   month: string
-  score: number
+  score: number | null
 }
 
 export interface TopicSubIssue {
@@ -19,6 +19,8 @@ export interface TopicSubIssue {
 }
 
 export interface TopicDrilldown {
+  periodId: string
+  scopeResponseCount: number
   label: LocalizedText
   topicId: string
   departmentId?: string

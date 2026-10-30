@@ -32,7 +32,7 @@ const items = computed<NavItem[]>(() => {
   const system = t('navSections.system')
   return [
     { section: overview, label: t('nav.dashboard'), to: '/dashboard', icon: LayoutDashboard },
-    { section: overview, label: t('nav.topics'), to: '/dashboard/topics/work', icon: FolderKanban },
+    { section: overview, label: t('nav.topics'), to: '/dashboard/topics', activePath: '/dashboard/topics', icon: FolderKanban },
     { section: overview, label: t('nav.hrAssistant'), to: '/hr-assistant', icon: BrainCircuit },
 
     { section: voices, label: t('nav.feed'), to: '/voices', icon: MessageSquare },

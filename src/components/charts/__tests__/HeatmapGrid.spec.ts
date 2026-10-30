@@ -36,7 +36,7 @@ describe('HeatmapGrid', () => {
     })
 
     expect(wrapper.text()).toContain('ทีมนวัตกรรม')
-    expect(wrapper.text()).toContain('ซ่อนเพื่อความเป็นส่วนตัว')
+    expect(wrapper.text()).toContain('ยังมีข้อมูลไม่เพียงพอสำหรับแสดงผล')
 
     // A visible department's score should render as a number, not the suppressed label
     expect(wrapper.text()).toContain('ฝ่ายวิศวกรรม')

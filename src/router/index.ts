@@ -51,7 +51,7 @@ const router = createRouter({
       meta: { roles: ['admin'] as Role[] },
     },
     {
-      path: '/dashboard/topics/:id',
+      path: '/dashboard/topics/:id?',
       name: 'topic-drilldown',
       component: () => import('@/views/hr/TopicDrilldownView.vue'),
       meta: { roles: ['admin'] as Role[] },

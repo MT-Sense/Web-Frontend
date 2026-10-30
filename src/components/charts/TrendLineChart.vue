@@ -83,7 +83,7 @@ const description = computed(() => {
       </g>
       <path :d="path" class="trend-line" fill="none" />
       <line
-        v-if="forecast && forecast.value !== null && points.at(-1)?.value !== null"
+        v-if="forecast && forecast.value !== null && points.length > 0 && points[points.length - 1]?.value != null"
         :x1="x(points.length - 1)"
         :y1="y(points[points.length - 1]!.value!)"
         :x2="x(points.length)"

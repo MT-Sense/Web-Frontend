@@ -10,6 +10,8 @@ export interface NavItem {
   label: string
   to: string
   icon: Component
+  /** Parent section to highlight while a detail route is open. */
+  activePath?: string
   /** Heading of the group this item belongs to; a heading is drawn where it changes. */
   section?: string
 }
@@ -44,6 +46,10 @@ watch(collapsed, (value) => {
 
 watch(() => route.fullPath, () => (drawerOpen.value = false))
 
+function isSectionActive(item: NavItem) {
+  return !!item.activePath && (route.path === item.activePath || route.path.startsWith(item.activePath + '/'))
+}
+
 /** True for the first item of a new section, where the heading goes. */
 function startsSection(index: number) {
   const section = props.items[index]?.section
@@ -64,7 +70,7 @@ function startsSection(index: number) {
       <nav class="sidebar drawer-nav full">
         <template v-for="(item, index) in props.items" :key="item.to">
           <p v-if="startsSection(index)" class="section-label">{{ item.section }}</p>
-          <router-link :to="item.to" class="nav-item" active-class="active">
+          <router-link :to="item.to" class="nav-item" :class="{ active: isSectionActive(item) }" active-class="active">
             <component :is="item.icon" :size="18" class="icon" aria-hidden="true" />
             <span class="label">{{ item.label }}</span>
           </router-link>
@@ -96,6 +102,7 @@ function startsSection(index: number) {
       <router-link
         :to="item.to"
         class="nav-item"
+        :class="{ active: isSectionActive(item) }"
         active-class="active"
         :title="collapsed ? item.label : undefined"
       >
